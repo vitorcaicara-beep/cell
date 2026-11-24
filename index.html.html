@@ -1,0 +1,3079 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LV Assistência Técnica - Sistema de Gerenciamento</title>
+<style>
+:root {
+  --bg: #0f1419;
+  --bg-2: #1a1f2e;
+  --bg-3: #252b3d;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text: #e5e7eb;
+  --text-dim: #9ca3af;
+  --border: #2d3548;
+  --shadow: 0 4px 6px rgba(0,0,0,0.3);
+  --whatsapp: #25d366;
+}
+
+[data-theme="light"] {
+  --bg: #f3f4f6;
+  --bg-2: #ffffff;
+  --bg-3: #e5e7eb;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text: #1f2937;
+  --text-dim: #6b7280;
+  --border: #d1d5db;
+  --shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+.login-screen {
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh; background: linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+.login-box {
+  background: var(--bg-2); padding: 40px; border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5); width: 380px; text-align: center;
+  border: 1px solid var(--border);
+}
+.login-box h1 { color: var(--primary); margin-bottom: 8px; font-size: 28px; }
+.login-box p { color: var(--text-dim); margin-bottom: 24px; font-size: 13px; }
+.login-box input {
+  width: 100%; padding: 12px; margin-bottom: 12px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 14px;
+}
+.login-box input:focus { outline: none; border-color: var(--primary); }
+.login-box button {
+  width: 100%; padding: 12px; background: var(--primary); color: white;
+  border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+  font-size: 15px; transition: 0.2s;
+}
+.login-box button:hover { background: var(--primary-hover); }
+.login-hint { margin-top: 16px; font-size: 12px; color: var(--text-dim); }
+
+.app { display: none; min-height: 100vh; }
+.app.active { display: flex; }
+.sidebar {
+  width: 240px; background: var(--bg-2); border-right: 1px solid var(--border);
+  padding: 20px 0; display: flex; flex-direction: column; position: fixed;
+  height: 100vh; overflow-y: auto; z-index: 100;
+}
+.logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+.logo h2 { color: var(--primary); font-size: 18px; }
+.logo span { color: var(--text-dim); font-size: 11px; }
+.nav { flex: 1; padding: 16px 0; }
+.nav-item {
+  padding: 12px 20px; cursor: pointer; display: flex; align-items: center;
+  gap: 12px; color: var(--text-dim); transition: 0.2s; border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--bg-3); color: var(--text); }
+.nav-item.active { background: var(--bg-3); color: var(--primary); border-left-color: var(--primary); }
+.nav-icon { font-size: 18px; width: 22px; text-align: center; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim); }
+
+.main { flex: 1; margin-left: 240px; padding: 24px; }
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.topbar h1 { font-size: 24px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;
+  font-weight: 500; font-size: 14px; transition: 0.2s; display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary { background: var(--bg-3); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-whatsapp { background: var(--whatsapp); color: white; }
+.btn-whatsapp:hover { background: #128c7e; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+.theme-toggle, .fullscreen-toggle {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; cursor: pointer;
+  color: var(--text); font-size: 18px;
+}
+.theme-toggle:hover, .fullscreen-toggle:hover { background: var(--border); }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--bg-2); padding: 20px; border-radius: 12px;
+  border: 1px solid var(--border); transition: 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.stat-label { color: var(--text-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 28px; font-weight: 700; margin-top: 8px; color: var(--text); }
+.stat-icon { float: right; font-size: 32px; opacity: 0.3; }
+.stat-card.primary .stat-value { color: var(--primary); }
+.stat-card.success .stat-value { color: var(--success); }
+.stat-card.warning .stat-value { color: var(--warning); }
+.stat-card.danger .stat-value { color: var(--danger); }
+
+.panel {
+  background: var(--bg-2); border-radius: 12px; padding: 24px;
+  border: 1px solid var(--border); margin-bottom: 20px;
+}
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.panel-header h2 { font-size: 18px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.form-group { display: flex; flex-direction: column; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  padding: 10px 12px; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 14px; font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--primary); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase;
+  color: var(--text-dim); letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+tr:hover { background: var(--bg-3); }
+.empty-row { text-align: center; color: var(--text-dim); padding: 30px !important; font-style: italic; }
+
+.badge {
+  display: inline-block; padding: 4px 10px; border-radius: 12px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+}
+.badge-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+.badge-approved { background: rgba(16,185,129,0.15); color: var(--success); }
+.badge-rejected { background: rgba(239,68,68,0.15); color: var(--danger); }
+.badge-info { background: rgba(59,130,246,0.15); color: var(--primary); }
+.badge-low { background: rgba(239,68,68,0.15); color: var(--danger); }
+.badge-ok { background: rgba(16,185,129,0.15); color: var(--success); }
+
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.search-bar {
+  width: 100%; padding: 10px 14px; background: var(--bg-3);
+  border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+  margin-bottom: 16px; font-size: 14px;
+}
+.search-bar:focus { outline: none; border-color: var(--primary); }
+
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab {
+  padding: 8px 16px; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-dim);
+}
+.tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.toast {
+  position: fixed; top: 20px; right: 20px; padding: 14px 20px;
+  background: var(--success); color: white; border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 9999;
+  animation: slideIn 0.3s; font-weight: 500;
+}
+.toast.error { background: var(--danger); }
+.toast.info { background: var(--primary); }
+@keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+
+.modal-bg {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 1000; justify-content: center; align-items: center; padding: 20px;
+}
+.modal-bg.active { display: flex; }
+.modal {
+  background: var(--bg-2); border-radius: 12px; padding: 24px;
+  max-width: 600px; width: 100%; border: 1px solid var(--border);
+  max-height: 80vh; overflow-y: auto;
+}
+.modal h3 { margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+.period-filters {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+  padding: 12px; background: var(--bg-2); border-radius: 8px; border: 1px solid var(--border);
+}
+.period-btn {
+  padding: 8px 16px; background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text-dim);
+  transition: 0.2s;
+}
+.period-btn:hover { background: var(--border); color: var(--text); }
+.period-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.print-area { display: none; }
+
+.toggle-container {
+  display: flex; align-items: center; gap: 12px;
+}
+.toggle {
+  position: relative; width: 50px; height: 26px;
+  background: var(--bg-3); border-radius: 13px; cursor: pointer;
+  border: 1px solid var(--border); transition: 0.3s;
+}
+.toggle.active { background: var(--success); border-color: var(--success); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; background: white; border-radius: 50%;
+  transition: 0.3s;
+}
+.toggle.active::after { left: 26px; }
+
+.backup-info {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin-top: 16px;
+  font-size: 13px; color: var(--text-dim);
+}
+.backup-info strong { color: var(--text); }
+.backup-info .step {
+  display: flex; gap: 10px; margin: 8px 0;
+  align-items: flex-start;
+}
+.backup-info .step-num {
+  background: var(--primary); color: white;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold; flex-shrink: 0;
+}
+.backup-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px; font-size: 12px;
+  margin-top: 8px;
+}
+.backup-status.active { background: rgba(16,185,129,0.15); color: var(--success); }
+.backup-status.inactive { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+/* CEP Loading Indicator */
+.cep-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.cep-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+@media print {
+  @page { margin: 0; size: auto; }
+  body { margin: 0; padding: 0; }
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area {
+    display: block; position: absolute; left: 0; top: 0;
+    width: 58mm; background: white; color: black;
+    padding: 3mm; font-family: 'Courier New', monospace;
+    font-size: 9px; line-height: 1.3; margin: 0;
+  }
+  .print-area h2 { font-size: 13px; text-align: center; margin-bottom: 2mm; border-bottom: 1px dashed #000; padding-bottom: 2mm; }
+  .print-area h3 { font-size: 11px; text-align: center; margin: 2mm 0; }
+  .print-area p { margin: 1mm 0; }
+  .print-area .center { text-align: center; }
+  .print-area .bold { font-weight: bold; }
+  .print-area .divider { border-top: 1px dashed #000; margin: 2mm 0; }
+  .print-area .double-divider { border-top: 2px solid #000; margin: 2mm 0; }
+  .print-area .warranty-box { border: 1px solid #000; padding: 2mm; margin: 2mm 0; font-size: 8px; }
+  .print-area .signature { margin-top: 5mm; text-align: center; font-size: 8px; }
+  .print-area .signature-line { border-top: 1px solid #000; width: 80%; margin: 8mm auto 1mm auto; padding-top: 1mm; }
+  .print-area .footer { margin-top: 3mm; text-align: center; font-size: 7px; border-top: 1px dashed #000; padding-top: 2mm; }
+}
+
+@media print and (min-width: 80mm) {
+  .print-area { width: 80mm; font-size: 10px; padding: 5mm; }
+  .print-area h2 { font-size: 15px; }
+  .print-area h3 { font-size: 12px; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .nav-item span:not(.nav-icon) { display: none; }
+  .logo h2, .logo span, .sidebar-footer { display: none; }
+  .main { margin-left: 60px; padding: 16px; }
+  .stat-value { font-size: 22px; }
+}
+</style>
+<style>
+/* v4.9: RECIBOS (80 mm, escala 100%), DASHBOARD e HISTÓRICO DE OS. Isolado por classes próprias. */
+.recibo-total-box{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--bg-3);border:1px solid var(--border);border-radius:8px}
+.recibo-total-box span{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+.recibo-total-box strong{font-size:26px;color:var(--success)}
+.recibo-preview-wrap{display:flex;justify-content:center;padding:16px;background:var(--bg-3);border-radius:8px;overflow:auto}
+.recibo-preview-wrap .recibo-sheet{box-shadow:0 4px 14px rgba(0,0,0,.35);flex-shrink:0}
+/* Para mudar a escala altere apenas --recibo-escala (1 = 100% = 80 mm reais). */
+.recibo-sheet{--recibo-escala:1;zoom:var(--recibo-escala);width:calc(80mm / var(--recibo-escala));padding:4mm 4mm 6mm;background:#fff;color:#000;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;font-weight:400;line-height:1.35;text-align:center;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid}
+.recibo-sheet *{margin:0;padding:0;box-sizing:border-box;color:#000;font-family:inherit;font-weight:400}
+.recibo-sheet .r-nome{font-size:15px;font-weight:700;letter-spacing:.3px}
+.recibo-sheet .r-small{font-size:10.5px}
+.recibo-sheet .r-div{border-top:1px dotted #000;margin:3mm 0}
+.recibo-sheet .r-title{font-size:13px;font-weight:700;letter-spacing:1.5px}
+.recibo-sheet .r-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;text-align:left;margin-bottom:.8mm}
+.recibo-sheet .r-row{display:flex;justify-content:space-between;gap:3mm;text-align:left;font-size:12px}
+.recibo-sheet .r-desc{flex:1;overflow-wrap:anywhere;word-break:break-word}
+.recibo-sheet .r-price{white-space:nowrap}
+.recibo-sheet .r-obs{font-size:10.5px;text-align:left;overflow-wrap:anywhere;word-break:break-word}
+.recibo-sheet .r-total{display:flex;justify-content:space-between;align-items:baseline;gap:2mm;padding:2mm 0;border-top:1px solid #000;border-bottom:1px solid #000;font-size:16px}
+.recibo-sheet .r-total span{font-weight:700}
+.recibo-sheet .r-msg{font-size:10.5px;margin-top:3mm}
+.recibo-sheet .r-sign{margin:11mm 5mm 0;border-top:1px solid #000;padding-top:1mm;font-size:10px}
+.recibo-sheet .r-thanks{font-size:11.5px}
+.recibo-sheet .r-safe{height:14mm}
+#receiptPrintArea{display:none}
+@media print{
+  body.printing-receipt{background:#fff!important;color:#000!important;min-height:0!important;height:auto!important;margin:0!important;padding:0!important;transition:none!important}
+  body.printing-receipt>*:not(#receiptPrintArea){display:none!important}
+  body.printing-receipt #receiptPrintArea{display:block!important;position:static!important;width:80mm;margin:0;padding:0;background:#fff}
+  body.printing-receipt #receiptPrintArea,body.printing-receipt #receiptPrintArea *{visibility:visible!important}
+  body.printing-receipt .recibo-sheet{box-shadow:none!important}
+}
+.dash-h{font-size:13px;margin:6px 0 12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
+.stat-card.click{cursor:pointer}.stat-card.click:hover{border-color:var(--primary)}
+.stat-sub{font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.4}
+.stat-card.neutral .stat-value{color:var(--text)}
+.dash-chart{display:flex;align-items:flex-end;gap:6px;height:200px}
+.dash-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;min-width:0}
+.dash-bar{width:100%;display:flex;flex-direction:column;justify-content:flex-end;border-radius:4px 4px 0 0;overflow:hidden}
+.dash-bar i{display:block;width:100%}
+.dash-col small,.dash-col em{font-size:10px;color:var(--text-dim);white-space:nowrap;font-style:normal;margin-top:3px}
+.dash-col:hover .dash-bar{filter:brightness(1.25)}
+.hbar{margin-bottom:10px}.hbar .t{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.hbar .b{height:8px;background:var(--bg-3);border-radius:4px;margin-top:4px;overflow:hidden}.hbar .b i{display:block;height:100%;background:var(--primary)}
+.lv-row{display:flex;justify-content:space-between;gap:10px;padding:9px 6px;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer}
+.lv-row:hover{background:var(--bg-3)}.lv-row small{color:var(--text-dim)}
+.lv-empty{color:var(--text-dim);font-style:italic;padding:14px;text-align:center;font-size:13px}
+.modal.wide{max-width:900px}
+.lv-sec{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin:18px 0 8px}
+.os-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.os-grid div{background:var(--bg-3);padding:10px 12px;border-radius:8px;font-size:13px;overflow-wrap:anywhere}
+.os-grid label{display:block;font-size:10px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px}
+.os-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.tl{margin-left:8px;padding-left:18px;border-left:2px solid var(--border)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-item::before{content:'';position:absolute;left:-25px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.tl-item.der::before{background:var(--text-dim)}
+.tl-when{font-size:11px;color:var(--text-dim)}.tl-tipo{font-size:12px;font-weight:600;color:var(--primary)}
+.tl-txt{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+#garWaModal,#garPdfView{z-index:1100}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#25151a">
+<style>
+/* ===== CellOS v6 — novo layout: "bancada" (vinho/vermelho + amarelo de solda) ===== */
+:root,[data-theme="light"]{--bg:#f3f1ef;--bg-2:#fff;--bg-3:#ebe7e4;--primary:#c8323a;--primary-hover:#a82730;--success:#1f9d63;--warning:#d98a0b;--danger:#a11d2a;
+  --text:#231a1c;--text-dim:#766a6d;--border:#e0d9d6;--shadow:0 1px 2px rgba(40,15,20,.06),0 6px 18px rgba(40,15,20,.05);--whatsapp:#1faa59;--side:#25151a;--solder:#f0b429;--r:12px}
+[data-theme="dark"]{--bg:#151012;--bg-2:#1e1618;--bg-3:#2b2023;--primary:#ef5b55;--primary-hover:#ff7a73;--text:#f1e9ea;--text-dim:#a8979a;--border:#3b2b2f;--shadow:0 6px 18px rgba(0,0,0,.35);--side:#0e0809}
+*{font-family:'Figtree','Segoe UI',system-ui,sans-serif}
+body{font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--solder);outline-offset:2px;border-radius:6px}
+/* marca */
+.brand-mark{display:inline-block;width:13px;height:22px;border:2.5px solid var(--solder);border-radius:4px;position:relative;vertical-align:-4px;margin-right:10px}
+.brand-mark::after{content:'';position:absolute;left:50%;bottom:2px;width:3px;height:3px;margin-left:-1.5px;background:var(--solder);border-radius:50%}
+/* login */
+.login-screen{background:radial-gradient(circle at 20% 10%,#4a1e26 0,var(--side) 55%);position:relative}
+.login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px) 0 0/36px 36px,linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px) 0 0/36px 36px}
+.login-box{position:relative;background:var(--bg-2);border:0;border-top:5px solid var(--solder);border-radius:var(--r);padding:36px 34px;width:min(400px,92vw);box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.login-box h1{color:var(--text);font-size:24px;letter-spacing:-.02em}
+.login-box input{border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:9px;padding:12px 14px}
+.login-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(200,50,58,.18)}
+.login-box button{border-radius:9px;font-weight:600;background:var(--primary);color:#fff}
+.login-hint{color:var(--text-dim)}
+/* menu lateral */
+.sidebar{width:236px;background:var(--side);border-right:0;padding:22px 12px}
+.logo{border-bottom:1px solid rgba(255,255,255,.1);padding:0 10px 18px}
+.logo h2{color:#fff;font-size:18px;letter-spacing:-.01em}.logo span{color:#b89aa0}
+.nav{padding:14px 0;display:flex;flex-direction:column;gap:2px}
+.nav-item{padding:10px 12px;border-radius:9px;border-left:0;color:#cbb5b8;font-weight:500;position:relative}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:8px;bottom:8px;width:4px;border-radius:0 4px 4px 0;background:var(--solder)}
+.nav-icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
+.nav-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sidebar-footer{border-top:1px solid rgba(255,255,255,.1);color:#a88a90;padding:14px 10px 0}
+.sidebar-footer .btn-secondary{background:rgba(255,255,255,.08);border-color:transparent;color:#fff}
+.main{margin-left:236px;padding:28px 32px;max-width:1500px}
+.topbar{margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.topbar h1{font-size:26px;font-weight:700;letter-spacing:-.02em}
+/* cartões e painéis */
+.panel{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+.panel-header h2{font-size:17px;font-weight:700}
+.stats-grid{gap:14px}
+.stat-card{background:var(--bg-2);border:1px solid var(--border);border-left:5px solid var(--text-dim);border-radius:var(--r);box-shadow:var(--shadow)}
+.stat-card.primary{border-left-color:var(--primary)}.stat-card.success{border-left-color:var(--success)}.stat-card.warning{border-left-color:var(--solder)}.stat-card.danger{border-left-color:var(--danger)}
+.stat-label{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text-dim);font-weight:500}
+.stat-value{font-weight:700;letter-spacing:-.02em}
+.hbar .b{background:var(--bg-3);border-radius:99px;overflow:hidden}.hbar .b i{background:var(--primary);border-radius:99px;display:block;height:100%}
+/* formulários */
+.form-group label{font-size:13px;font-weight:600;color:var(--text)}
+.form-group input,.form-group select,.form-group textarea,.search-bar,.pdv-in{background:var(--bg-2);color:var(--text);border:1.5px solid var(--border);border-radius:9px;padding:10px 12px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus,.search-bar:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(200,50,58,.18);outline:0}
+/* botões */
+.btn{border-radius:9px;font-weight:600;border:1.5px solid transparent}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+.btn-secondary{background:var(--bg-2);color:var(--text);border-color:var(--border)}.btn-secondary:hover{background:var(--bg-3)}
+.btn-danger{background:transparent;color:var(--danger);border-color:var(--danger)}.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-whatsapp{background:var(--whatsapp);color:#fff}
+.period-btn{border-radius:99px;background:var(--bg-2);border:1.5px solid var(--border);font-weight:600}
+.period-btn.active{background:var(--text);color:var(--bg-2);border-color:var(--text)}
+.tab.active{border-bottom-color:var(--solder)}
+/* tabelas */
+th{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:600;color:var(--text-dim);background:var(--bg);border-bottom:1.5px solid var(--border)}
+td{border-bottom:1px solid var(--border)}tbody tr:hover td,tr:hover>td{background:rgba(200,50,58,.05)}
+.table-wrap{border:1px solid var(--border);border-radius:var(--r);background:var(--bg-2)}
+.empty-row{color:var(--text-dim);text-align:center;padding:26px}
+.badge{border-radius:99px;font-weight:600}
+/* janelas e avisos */
+.modal-bg{background:rgba(8,19,23,.55);backdrop-filter:blur(3px)}
+.modal{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.toast{border-radius:10px;font-weight:600}
+.theme-toggle,.fullscreen-toggle{border-radius:10px}
+/* celular/tablet: menu vira barra superior rolável */
+@media(max-width:900px){
+  .app.active{flex-direction:column}
+  .sidebar{position:sticky;top:0;width:100%;height:auto;flex-direction:row;align-items:center;padding:8px 10px;overflow:visible}
+  .logo,.sidebar-footer{display:none}
+  .nav{flex-direction:row;overflow-x:auto;padding:0;gap:4px;scrollbar-width:none}
+  .nav-item{white-space:nowrap;padding:9px 12px;flex:0 0 auto}
+  .nav-item span:not(.nav-icon){display:inline!important}
+  .nav-item.active::before{left:10px;right:10px;top:auto;bottom:-2px;width:auto;height:3px;border-radius:3px}
+  .main{margin-left:0;padding:16px}
+  .topbar h1{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{.sidebar{display:none}.main{margin:0;padding:0}}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1><span class="brand-mark"></span>LV Assistência Técnica</h1>
+    <p>Sistema de Gerenciamento</p>
+    <input type="text" id="loginUser" placeholder="Usuário" autocomplete="username">
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="current-password">
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-hint">Padrão: admin / 1234</div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:16px;width:100%" onclick="emergencyReset()">🔧 Reset de Emergência</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <h2><span class="brand-mark"></span>LV Assistência</h2>
+      <span>Sistema de Gerenciamento</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="showSection('dashboard', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span><span>Dashboard</span></div>
+      <div class="nav-item" onclick="showSection('clientes', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><span>Clientes</span></div>
+      <div class="nav-item" onclick="showSection('estoque', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><span>Estoque</span></div>
+      <div class="nav-item" onclick="showSection('orcamentos', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span><span>Orçamentos</span></div>
+      <div class="nav-item" onclick="showSection('os', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.2-.4-.4-2.2z"/></svg></span><span>Ordens de Serviço</span></div>
+      <div class="nav-item" onclick="showSection('vendas', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M1 3h4l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.6L22 7H6"/></svg></span><span>Vendas</span></div>
+      <div class="nav-item" onclick="showSection('garantia', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><span>Garantia</span></div>
+      <div class="nav-item" onclick="showSection('recibos', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><span>Recibos</span></div>
+      <div class="nav-item" onclick="showSection('relatorios', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span><span>Relatórios</span></div>
+      <div class="nav-item" onclick="showSection('config', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><span>Configurações</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      Feito por Vitor Rosa<br>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%" onclick="logout()">🚪 Sair</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="section active" id="dashboard">
+      <div class="topbar">
+        <h1>📊 Dashboard</h1>
+        <div class="topbar-actions">
+          <button class="theme-toggle" onclick="toggleTheme()" title="Alternar Tema">🌙</button>
+          <button class="fullscreen-toggle" onclick="toggleFullscreen()" title="Tela Cheia">⛶</button>
+          <button class="btn btn-secondary" onclick="exportData()"> Exportar</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importar</button>
+          <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+        </div>
+      </div>
+      <div class="period-filters">
+        <div class="period-btn" onclick="setDashboardPeriod('today', this)">📅 Hoje</div>
+        <div class="period-btn" onclick="setDashboardPeriod('week', this)">📆 Semana</div>
+        <div class="period-btn active" onclick="setDashboardPeriod('month', this)">🗓️ Mês</div>
+        <div class="period-btn" onclick="setDashboardPeriod('year', this)">📊 Ano</div>
+        <div class="period-btn" onclick="setDashboardPeriod('all', this)">🏆 Total</div>
+      </div>
+      <h3 class="dash-h">💰 Financeiro</h3>
+      <div class="stats-grid" id="statsGrid"></div>
+      <h3 class="dash-h">🔧 Operação (situação atual das OS)</h3>
+      <div class="stats-grid" id="dashOps"></div>
+      <div class="dash-grid">
+        <div class="panel"><div class="panel-header"><h2>📈 Evolução mensal do faturamento</h2></div><div id="dashChart"></div></div>
+        <div class="panel"><div class="panel-header"><h2>🛠️ Serviços mais realizados</h2></div><div id="dashServ"></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel"><div class="panel-header"><h2>💳 Vendas por forma de pagamento</h2></div><div id="dashPag"></div></div>
+        <div class="panel"><div class="panel-header"><h2>🏷️ Produtos mais vendidos</h2></div><div id="dashProd"></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel"><div class="panel-header"><h2>🚨 OS que precisam de atenção</h2></div><div id="dashAttn"></div></div>
+        <div class="panel"><div class="panel-header"><h2 id="dashCliTitle">👥 Clientes atendidos</h2></div><div id="dashCli"></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="panel"><div class="panel-header"><h2>⚠️ Estoque Baixo</h2></div><div class="table-wrap"><table id="lowStockTable"></table></div></div>
+        <div class="panel"><div class="panel-header"><h2>🕒 Movimentação recente</h2></div><div class="table-wrap"><table id="recentTable"></table></div></div>
+      </div>
+    </div>
+
+    <div class="section" id="clientes">
+      <div class="topbar"><h1>👥 Clientes</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Cadastro de Cliente</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nome *</label><input type="text" id="cNome"></div>
+          <div class="form-group"><label>Telefone *</label><input type="text" id="cTel" placeholder="(00) 00000-0000"></div>
+          <div class="form-group"><label>CPF *</label><input type="text" id="cCpf" placeholder="000.000.000-00"></div>
+          <div class="form-group"><label>E-mail</label><input type="email" id="cEmail"></div>
+          <div class="form-group"><label>Aparelho *</label><input type="text" id="cAparelho"></div>
+          <div class="form-group"><label>IMEI</label><input type="text" id="cImei"></div>
+          <div class="form-group">
+            <label>CEP *</label>
+            <div class="cep-input-container">
+              <input type="text" id="cCep" placeholder="00000-000" onblur="buscarCEP()" oninput="mascararCEP(this)" style="flex:1">
+              <span id="cepLoading" class="cep-loading" style="display:none"></span>
+            </div>
+          </div>
+          <div class="form-group full"><label>Rua *</label><input type="text" id="cRua"></div>
+          <div class="form-group"><label>Bairro *</label><input type="text" id="cBairro"></div>
+          <div class="form-group"><label>Cidade *</label><input type="text" id="cCidade"></div>
+          <div class="form-group full"><label>Observações</label><textarea id="cObs"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveCliente()">💾 Salvar</button>
+          <button class="btn btn-secondary" onclick="clearForm('c')">🧹 Limpar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Clientes Cadastrados</h2></div>
+        <input type="text" class="search-bar" placeholder="🔍 Buscar cliente..." oninput="renderClientes(this.value)">
+        <div class="table-wrap"><table id="clientesTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="estoque">
+      <div class="topbar"><h1>📦 Estoque</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Cadastro de Item</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Item *</label><input type="text" id="eItem"></div>
+          <div class="form-group"><label>Tipo</label><select id="eTipo"><option>Peça</option><option>Aparelho</option><option>Acessório</option></select></div>
+          <div class="form-group"><label>Quantidade</label><input type="number" id="eQtd" value="1" min="0"></div>
+          <div class="form-group"><label>Custo (R$)</label><input type="number" id="eCusto" step="0.01"></div>
+          <div class="form-group"><label>Venda (R$)</label><input type="number" id="eVenda" step="0.01"></div>
+          <div class="form-group"><label>Mínimo</label><input type="number" id="eMin" value="1" min="0"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveEstoque()">💾 Salvar</button>
+          <button class="btn btn-secondary" onclick="clearForm('e')">🧹 Limpar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Itens Cadastrados</h2></div>
+        <div class="tabs">
+          <div class="tab active" onclick="filterEstoque('all', this)">Todos</div>
+          <div class="tab" onclick="filterEstoque('Peça', this)">Peças</div>
+          <div class="tab" onclick="filterEstoque('Aparelho', this)">Aparelhos</div>
+          <div class="tab" onclick="filterEstoque('Acessório', this)">Acessórios</div>
+        </div>
+        <input type="text" class="search-bar" placeholder="🔍 Buscar item..." oninput="renderEstoque(null, this.value)">
+        <div class="table-wrap"><table id="estoqueTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="orcamentos">
+      <div class="topbar"><h1>💰 Orçamentos</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Novo Orçamento</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente *</label><select id="oCliente"><option value="">Selecione...</option></select></div>
+          <div class="form-group"><label>Aparelho</label><input type="text" id="oAparelho"></div>
+          <div class="form-group"><label>IMEI</label><input type="text" id="oImei"></div>
+          <div class="form-group"><label>Valor (R$)</label><input type="number" id="oValor" step="0.01"></div>
+          <div class="form-group"><label>Status</label><select id="oStatus"><option>Pendente</option><option>Aprovado</option><option>Reprovado</option></select></div>
+          <div class="form-group full"><label>Defeito/Obs</label><textarea id="oObs"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveOrcamento()">💾 Salvar</button>
+          <button class="btn btn-secondary" onclick="clearForm('o')">🧹 Limpar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Orçamentos Registrados</h2></div>
+        <input type="text" class="search-bar" placeholder="🔍 Buscar orçamento..." oninput="renderOrcamentos(this.value)">
+        <div class="table-wrap"><table id="orcamentosTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="os">
+      <div class="topbar"><h1>🔧 Ordens de Serviço</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Nova OS</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente *</label><select id="osCliente" onchange="autoFillOS()"><option value="">Selecione...</option></select></div>
+          <div class="form-group"><label>Aparelho</label><input type="text" id="osAparelho"></div>
+          <div class="form-group"><label>Peça</label><input type="text" id="osPeca"></div>
+          <div class="form-group"><label>Técnico</label><input type="text" id="osTecnico" value="Diego Vasconcelos"></div>
+          <div class="form-group"><label>Valor (R$)</label><input type="number" id="osValor" step="0.01"></div>
+          <div class="form-group"><label>Status</label><select id="osStatus"><option>Recebido</option><option>Em análise</option><option>Aguardando aprovação</option><option>Aguardando peça</option><option>Em reparo</option><option>Teste final</option><option>Pronto para retirada</option><option>Concluída</option></select></div>
+          <div class="form-group full"><label>Observações</label><textarea id="osObs"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveOS()">💾 Salvar</button>
+          <button class="btn btn-secondary" onclick="clearForm('os')"> Limpar</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Ordens de Serviço</h2></div>
+        <input type="text" class="search-bar" placeholder="🔍 Buscar OS..." oninput="renderOS(this.value)">
+        <div class="table-wrap"><table id="osTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="vendas">
+      <div class="topbar"><h1>🛒 Vendas</h1></div>
+      <div class="panel" id="pdvPanel">
+        <div class="panel-header"><h2>🛒 PDV — Nova venda</h2><small style="color:var(--text-dim)">F2 busca · ↑↓ escolhe · Enter adiciona · F9 finaliza</small></div>
+        <div class="pdv-grid">
+          <div>
+            <input id="pdvBusca" class="search-bar" style="margin-bottom:8px" placeholder="🔍 Nome do produto ou código de barras (leitor)" autocomplete="off" oninput="pdvSel=0;pdvBusca()" onkeydown="pdvKey(event)">
+            <div id="pdvLink" class="pdv-box" style="display:none"></div>
+            <div id="pdvRes" style="margin-bottom:10px"></div>
+            <details style="margin:8px 0 12px"><summary style="cursor:pointer;color:var(--text-dim);font-size:13px">➕ Item avulso (sem cadastro no estoque)</summary>
+              <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="pdvAvDesc" class="pdv-in" style="flex:1;min-width:140px;width:auto" placeholder="Descrição"><input id="pdvAvPreco" class="pdv-in" type="number" step="0.01" min="0" placeholder="Preço"><button class="btn btn-secondary btn-sm" onclick="pdvAvulso()">Adicionar</button></div></details>
+            <div class="table-wrap"><table id="pdvCart"></table></div>
+          </div>
+          <div>
+            <div class="pdv-box">
+              <div class="form-group" style="margin-bottom:10px"><label>Cliente (opcional)</label><select id="pdvCliente"><option value="">Consumidor (sem cadastro)</option></select></div>
+              <div class="pdv-line"><span>Subtotal</span><span id="pdvSub">R$ 0,00</span></div>
+              <div class="form-group" style="margin:8px 0"><label>Desconto (R$)</label><input type="number" id="pdvDesc" step="0.01" min="0" value="0" oninput="pdvTotais()"></div>
+              <div class="pdv-line"><span>TOTAL</span><span class="pdv-total" id="pdvTotal">R$ 0,00</span></div>
+            </div>
+            <div class="pdv-box">
+              <div class="form-group"><label>Forma de pagamento</label><select id="pdvForma" onchange="pdvTotais()"><option>Dinheiro</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Pix</option><option>Outro</option></select></div>
+              <div id="pdvDinheiro"><div class="form-group" style="margin-top:10px"><label>Valor recebido (R$) — vazio = valor exato</label><input type="number" id="pdvRec" step="0.01" min="0" oninput="pdvTotais()" onkeydown="if(event.key==='Enter'){event.preventDefault();pdvFinalizar();}"></div>
+                <div class="pdv-line"><span id="pdvTrocoL">Troco</span><strong id="pdvTroco">R$ 0,00</strong></div></div>
+            </div>
+            <button class="btn btn-success pdv-big" id="pdvFin" onclick="pdvFinalizar()">💰 Finalizar venda (F9)</button>
+            <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px;justify-content:center" onclick="pdvLimpar()">🧹 Limpar carrinho</button>
+          </div>
+        </div>
+      </div>
+      <details class="panel"><summary style="cursor:pointer;font-weight:600">Registro simples (formulário anterior)</summary>
+        <div class="panel-header" style="margin-top:12px"><h2>Registrar Venda</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente *</label><select id="vCliente"><option value="">Selecione...</option></select></div>
+          <div class="form-group"><label>Item</label><select id="vItem" onchange="fillPrice()"><option value="">Selecione...</option></select></div>
+          <div class="form-group"><label>Quantidade</label><input type="number" id="vQtd" value="1" min="1"></div>
+          <div class="form-group"><label>Preço (R$)</label><input type="number" id="vPreco" step="0.01"></div>
+          <div class="form-group"><label>Desconto (R$)</label><input type="number" id="vDesc" step="0.01" value="0"></div>
+          <div class="form-group"><label>Pagamento</label><select id="vPag"><option>Dinheiro</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Pix</option><option>Outro</option></select></div>
+          <div class="form-group full"><label>Obs</label><textarea id="vObs"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-success" onclick="saveVenda()">💰 Registrar Venda</button>
+          <button class="btn btn-secondary" onclick="clearForm('v')">🧹 Limpar</button>
+        </div>
+      </details>
+      <div class="panel">
+        <div class="panel-header"><h2>Vendas Realizadas</h2></div>
+        <input type="text" class="search-bar" placeholder=" Buscar venda..." oninput="renderVendas(this.value)">
+        <div class="table-wrap"><table id="vendasTable"></table></div>
+      </div>
+    </div>
+
+    <div class="section" id="garantia">
+      <div class="topbar"><h1>️ Garantia</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Gerenciar Garantia</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Selecionar OS</label><select id="gOS" onchange="loadOSGarantia()"><option value="">Selecione...</option></select></div>
+          <div class="form-group"><label>Dias</label><input type="number" id="gDias" value="90"></div>
+          <div class="form-group full"><label>Informações</label><div id="gInfo" style="padding:12px;background:var(--bg-3);border-radius:8px">Selecione uma OS</div></div>
+          <div class="form-group full"><label>Pasta de armazenamento dos PDFs</label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="lvEscolherPastaGar()">📁 Escolher pasta de garantias</button><span id="gPastaStatus" style="color:var(--text-dim);font-size:13px"></span></div>
+            <small style="color:var(--text-dim);margin-top:6px">Escolha uma vez a pasta "Garantias 2026". O PDF vai para a subpasta do mês de emissão.</small></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveGarantia()">💾 Atualizar e Concluir OS</button>
+          <button class="btn btn-secondary" onclick="printGarantia('thermal')">🖨️ Imprimir Térmica</button>
+          <button class="btn btn-secondary" onclick="printGarantia('a4')">📄 Imprimir A4</button>
+          <button class="btn btn-whatsapp" id="btnGarWhats" onclick="enviarGarantiaWhatsApp()">📲 Enviar PDF no WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="recibos">
+      <div class="topbar"><h1>🧾 Recibos</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Emitir Recibo de Venda</h2></div>
+        <div class="form-grid">
+          <div class="form-group full"><label>Produto / Serviço *</label><input type="text" id="rProduto" placeholder="Ex.: Película de vidro, Troca de tela..." autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('rValor').focus();}"></div>
+          <div class="form-group"><label>Valor (R$) *</label><input type="number" id="rValor" step="0.01" min="0" placeholder="0,00" oninput="atualizarTotalRecibo()" onkeydown="if(event.key==='Enter'){event.preventDefault();visualizarRecibo();}"></div>
+          <div class="form-group"><label>Cliente (opcional)</label><input type="text" id="rCliente" autocomplete="off"></div>
+          <div class="form-group"><label>Data e hora (automático)</label><input type="text" id="rDataHora" readonly></div>
+          <div class="form-group full"><label>Observações (opcional)</label><textarea id="rObs" style="min-height:56px"></textarea></div>
+          <div class="form-group full">
+            <div class="recibo-total-box"><span>Total do recibo</span><strong id="rTotal">R$ 0,00</strong></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="visualizarRecibo()">👁️ Visualizar Recibo</button>
+          <button class="btn btn-primary" onclick="imprimirRecibo()">🖨️ Imprimir Recibo</button>
+          <button class="btn btn-secondary" onclick="limparRecibo()">🧹 Limpar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="relatorios">
+      <div class="topbar"><h1>📊 Relatórios</h1></div>
+      <div class="period-filters">
+        <div class="period-btn active" onclick="setReportPeriod('today', this)">📅 Hoje</div>
+        <div class="period-btn" onclick="setReportPeriod('week', this)">📆 Semana</div>
+        <div class="period-btn" onclick="setReportPeriod('month', this)">️ Mês</div>
+        <div class="period-btn" onclick="setReportPeriod('year', this)">📊 Ano</div>
+        <div class="period-btn" onclick="setReportPeriod('all', this)">🏆 Total</div>
+      </div>
+      <div class="stats-grid" id="relStats"></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Resumo Financeiro</h2></div>
+        <div id="relContent"></div>
+      </div>
+    </div>
+
+    <div class="section" id="config">
+      <div class="topbar"><h1>⚙️ Configurações</h1></div>
+      <div class="panel">
+        <div class="panel-header"><h2>Dados da Loja</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nome</label><input type="text" id="cfgNome"></div>
+          <div class="form-group"><label>Telefone</label><input type="text" id="cfgTel" placeholder="(00) 00000-0000"></div>
+          <div class="form-group"><label>WhatsApp</label><input type="text" id="cfgWhatsapp" placeholder="5500000000000"></div>
+          <div class="form-group"><label>Documento</label><input type="text" id="cfgDoc"></div>
+          <div class="form-group"><label>Garantia (dias)</label><input type="number" id="cfgGar" value="90"></div>
+          <div class="form-group full"><label>Endereço</label><textarea id="cfgEnd"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>️ Backup Automático</h2></div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Backup automático no login</label>
+            <div class="toggle-container">
+              <div class="toggle" id="backupToggle" onclick="toggleBackup()"></div>
+              <span id="backupStatusText">Desativado</span>
+            </div>
+            <div id="backupStatusBadge" class="backup-status inactive">
+              ⚠️ Backup automático desativado
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Pasta de backup</label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="chooseBackupFolder()">📁 Escolher Pasta</button>
+              <span id="backupFolderPath" style="color:var(--text-dim);font-size:13px">Nenhuma pasta selecionada (usará Downloads)</span>
+            </div>
+          </div>
+          <div class="form-group full">
+            <button class="btn btn-primary" onclick="manualBackup()">💾 Fazer Backup Agora</button>
+          </div>
+        </div>
+        <div class="backup-info">
+          <strong>📋 Como configurar o Google Drive:</strong>
+          <div class="step"><div class="step-num">1</div><div>Instale o <strong>Google Drive Desktop</strong> (gratuito): <a href="https://www.google.com/drive/download/" target="_blank" style="color:var(--primary)">google.com/drive/download</a></div></div>
+          <div class="step"><div class="step-num">2</div><div>Faça login com sua conta Google</div></div>
+          <div class="step"><div class="step-num">3</div><div>Clique em <strong>"Escolher Pasta"</strong> acima e selecione uma pasta dentro do seu Google Drive</div></div>
+          <div class="step"><div class="step-num">4</div><div>Ative o <strong>"Backup automático no login"</strong></div></div>
+          <div class="step"><div class="step-num">5</div><div>Pronto! Backups automáticos na nuvem ☁️</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>🔐 Usuário</h2></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Usuário</label><input type="text" id="cfgUser"></div>
+          <div class="form-group"><label>Senha</label><input type="password" id="cfgPass"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveUser()">💾 Salvar</button>
+          <button class="btn btn-danger" onclick="confirmReset()">⚠️ Zerar Tudo</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="print-area" id="printArea"></div>
+<div id="receiptPrintArea" aria-hidden="true"></div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Confirmar</h3>
+    <p id="modalMsg">Tem certeza?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger" id="modalOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="reciboModal">
+  <div class="modal" style="max-width:440px">
+    <h3>🧾 Pré-visualização do Recibo</h3>
+    <div class="recibo-preview-wrap" id="reciboPreview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="fecharPreviaRecibo()">Fechar</button>
+      <button class="btn btn-primary" onclick="imprimirRecibo(true)">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="garWaModal">
+  <div class="modal" style="max-width:500px">
+    <h3>📲 PDF da garantia pronto para enviar</h3>
+    <div id="garWaBody" style="font-size:14px;line-height:1.6"></div>
+    <div class="modal-actions">
+      <button class="btn btn-whatsapp" onclick="reabrirWhatsAppGarantia()">📲 Abrir WhatsApp novamente</button>
+      <button class="btn btn-secondary" onclick="fecharModalGarantiaWa()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB_NAME = 'CellOS_DB';
+const DB_VERSION = 1;
+let db = null;
+let dashboardPeriod = 'month';
+let reportPeriod = 'month';
+let backupHandle = null;
+let autoBackupEnabled = false;
+
+async function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => { db = request.result; resolve(db); };
+    request.onupgradeneeded = (event) => {
+      const database = event.target.result;
+      ['clientes','estoque','orcamentos','os','vendas'].forEach(store => {
+        if (!database.objectStoreNames.contains(store)) {
+          database.createObjectStore(store, { keyPath: 'id', autoIncrement: true });
+        }
+      });
+      if (!database.objectStoreNames.contains('config')) {
+        database.createObjectStore('config', { keyPath: 'key' });
+      }
+      if (!database.objectStoreNames.contains('counters')) {
+        database.createObjectStore('counters', { keyPath: 'type' });
+      }
+    };
+  });
+}
+
+async function dbAdd(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readwrite');
+    const req = tx.objectStore(store).add(data);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGet(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readonly');
+    const req = tx.objectStore(store).get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbUpdate(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readwrite');
+    const req = tx.objectStore(store).put(data);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbDelete(store, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbClear(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([store], 'readwrite');
+    const req = tx.objectStore(store).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getConfig(key, def = null) {
+  try {
+    const r = await dbGet('config', key);
+    return r ? r.value : def;
+  } catch (err) { return def; }
+}
+
+async function setConfig(key, value) {
+  try { await dbUpdate('config', { key, value }); return true; }
+  catch (err) { console.error('Erro config:', err); return false; }
+}
+
+async function getNextCounter(type) {
+  const c = await dbGet('counters', type);
+  const next = c ? c.value + 1 : 1;
+  await dbUpdate('counters', { type, value: next });
+  return next;
+}
+
+const fmt = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
+const now = () => new Date().toLocaleString('pt-BR');
+const today = () => new Date().toLocaleDateString('pt-BR');
+
+function formatText(text) {
+  if (!text) return '';
+  return text.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function toast(msg, err=false, info=false) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' error' : '') + (info ? ' info' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function showModal(title, msg, cb) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('modalOk').onclick = () => { cb(); closeModal(); };
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+function clearForm(p) {
+  const ids = {
+    c: ['cNome','cTel','cCpf','cEmail','cAparelho','cImei','cCep','cRua','cBairro','cCidade','cObs'],
+    e: ['eItem','eQtd','eCusto','eVenda','eMin'],
+    o: ['oAparelho','oImei','oValor','oObs'],
+    os: ['osAparelho','osPeca','osTecnico','osValor','osObs'],
+    v: ['vQtd','vPreco','vDesc','vObs']
+  };
+  (ids[p]||[]).forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  if (p === 'os') document.getElementById('osTecnico').value = 'Diego Vasconcelos';
+}
+
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'relatorios') renderRelatorios();
+  if (id === 'garantia') fillGarantiaSelect();
+  if (id === 'config') loadBackupSettings();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('cellos_theme', next);
+  document.querySelector('.theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+}
+
+// ============ FULLSCREEN FUNCTIONS ============
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().then(() => {
+      toast('🖥️ Modo tela cheia ativado', false, true);
+    }).catch(err => {
+      toast('Erro ao entrar em tela cheia: ' + err.message, true);
+    });
+  } else {
+    document.exitFullscreen().then(() => {
+      toast('Saindo do modo tela cheia', false, true);
+    });
+  }
+}
+
+function updateFullscreenIcon() {
+  const btn = document.querySelector('.fullscreen-toggle');
+  if (btn) {
+    btn.textContent = document.fullscreenElement ? '⛶' : '⛶';
+    btn.title = document.fullscreenElement ? 'Sair da Tela Cheia' : 'Tela Cheia';
+  }
+}
+
+document.addEventListener('fullscreenchange', updateFullscreenIcon);
+document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
+document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+
+// Tentar entrar em tela cheia após interação do usuário (login)
+async function tryAutoFullscreen() {
+  try {
+    if (document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+      toast('🖥️ Sistema aberto em tela cheia', false, true);
+    }
+  } catch (err) {
+    console.log('Fullscreen automático não permitido sem interação direta');
+  }
+}
+
+const savedTheme = localStorage.getItem('cellos_theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+if (document.querySelector('.theme-toggle')) {
+  document.querySelector('.theme-toggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+}
+
+// ============ CEP FUNCTIONS ============
+
+function mascararCEP(input) {
+  let valor = input.value.replace(/\D/g, '');
+  if (valor.length > 8) valor = valor.slice(0, 8);
+  if (valor.length > 5) {
+    valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  input.value = valor;
+}
+
+async function buscarCEP() {
+  const cepInput = document.getElementById('cCep');
+  const cep = cepInput.value.replace(/\D/g, '');
+  const loading = document.getElementById('cepLoading');
+  
+  if (cep.length !== 8) {
+    if (cep.length > 0) toast('CEP inválido. Use o formato 00000-000', true);
+    return;
+  }
+  
+  loading.style.display = 'inline-block';
+  
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await response.json();
+    
+    if (data.erro) {
+      toast('CEP não encontrado', true);
+      loading.style.display = 'none';
+      return;
+    }
+    
+    // Preencher campos automaticamente
+    if (data.logradouro) document.getElementById('cRua').value = data.logradouro;
+    if (data.bairro) document.getElementById('cBairro').value = data.bairro;
+    if (data.localidade) document.getElementById('cCidade').value = data.localidade;
+    
+    toast('✅ Endereço preenchido automaticamente!', false, true);
+    
+  } catch (err) {
+    console.error('Erro ao buscar CEP:', err);
+    toast('Erro ao consultar CEP. Verifique sua conexão.', true);
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+function formatWhatsAppNumber(phone) {
+  let num = phone.replace(/\D/g, '');
+  if (!num.startsWith('55')) num = '55' + num;
+  if (num.length < 12) return null;
+  return num;
+}
+
+function openWhatsApp(number, message) {
+  const formattedNum = formatWhatsAppNumber(number);
+  if (!formattedNum) { toast('Número inválido', true); return; }
+  window.open(`https://wa.me/${formattedNum}?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+function getTemplate(type, data) {
+  const storeName = data.storeName || 'LV Assistência Técnica';
+  const templates = {
+    greeting: `Olá ${data.clientName}! Tudo bem?\n\nAqui é da *${storeName}*.\n\nComo podemos ajudar?\n\n_Aguardo seu retorno!_ 😊`,
+    osReceived: `Olá ${data.clientName}! 👋\n\nRecebemos seu aparelho:\n📱 *${data.device || 'Não informado'}*\n *OS #${String(data.osNumber).padStart(4,'0')}*\n\nEntraremos em contato em breve!\n\n*${storeName}*\n📞 ${data.storePhone || ''}`,
+    osReady: `Olá ${data.clientName}! ✅\n\nSeu aparelho está *PRONTO*!\n\n🔧 *OS #${String(data.osNumber).padStart(4,'0')}*\n📱 ${data.device || 'Não informado'}\n💰 Valor: ${fmt(data.value)}\n\nAguardamos você!\n\n*${storeName}*`,
+    budget: `Olá ${data.clientName}!\n\nOrçamento solicitado:\n\n🔧 *OS #${String(data.osNumber).padStart(4,'0')}*\n📱 ${data.device || 'Não informado'}\n📝 ${data.observation || 'Sem observações'}\n\n💰 *Valor: ${fmt(data.value)}*\n\n⏳ Validade: 7 dias\n\nPodemos prosseguir?\n\n*${storeName}*\n ${data.storePhone || ''}`,
+    warranty: `Olá ${data.clientName}!\n\nTermo de garantia:\n\n🔧 *OS #${String(data.osNumber).padStart(4,'0')}*\n📱 ${data.device || 'Não informado'}\n🛡️ Garantia: ${data.warrantyDays || 90} dias\n\n*${storeName}*`,
+    sale: `Olá ${data.clientName}!\n\nObrigado pela compra! 🎉\n\n*Venda #${String(data.saleNumber).padStart(4,'0')}*\n📦 ${data.itemName || 'Item'}\n💰 Total: ${fmt(data.total)}\n\n*${storeName}*`
+  };
+  return templates[type] || '';
+}
+
+async function getStoreConfig() {
+  return {
+    nome: await getConfig('nome', 'LV Assistência Técnica'),
+    tel: await getConfig('tel', ''),
+    whatsapp: await getConfig('whatsapp', ''),
+    doc: await getConfig('doc', ''),
+    endereco: await getConfig('endereco', '')
+  };
+}
+
+function printDoc(html) {
+  document.getElementById('printArea').innerHTML = html;
+  window.print();
+}
+
+function parseDate(dateStr) {
+  if (!dateStr) return new Date(0);
+  const parts = dateStr.split(' ');
+  if (parts[0]) {
+    const dateParts = parts[0].split('/');
+    if (dateParts.length === 3) return new Date(dateParts[2], dateParts[1]-1, dateParts[0]);
+  }
+  return new Date(dateStr);
+}
+
+function isDateInRange(dateStr, period) {
+  if (period === 'all') return true;
+  const date = parseDate(dateStr);
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  switch(period) {
+    case 'today': return date.toDateString() === now.toDateString();
+    case 'week': const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7); return date >= weekAgo;
+    case 'month': return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    case 'year': return date.getFullYear() === now.getFullYear();
+    default: return true;
+  }
+}
+
+// ============ BACKUP FUNCTIONS ============
+
+async function generateBackupData() {
+  return {
+    clientes: await dbGetAll('clientes'),
+    estoque: await dbGetAll('estoque'),
+    orcamentos: await dbGetAll('orcamentos'),
+    os: await dbGetAll('os'),
+    vendas: await dbGetAll('vendas'),
+    config: {
+      nome: await getConfig('nome'), tel: await getConfig('tel'),
+      whatsapp: await getConfig('whatsapp'), doc: await getConfig('doc'),
+      garantia: await getConfig('garantia'), endereco: await getConfig('endereco'),
+      user: await getConfig('user'), pass: await getConfig('pass')
+    },
+    backupDate: new Date().toISOString(), version: '4.8'
+  };
+}
+
+function getBackupFilename() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `cellos_backup_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`;
+}
+
+async function saveBackupToFile(blob, filename) {
+  if (backupHandle && window.showDirectoryPicker) {
+    try {
+      const permission = await backupHandle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        const result = await backupHandle.requestPermission({ mode: 'readwrite' });
+        if (result !== 'granted') throw new Error('Permissão negada');
+      }
+      const fileHandle = await backupHandle.getFileHandle(filename, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return true;
+    } catch (err) { console.warn('Erro pasta:', err); }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  return false;
+}
+
+async function manualBackup() {
+  toast('Gerando backup...', false, true);
+  try {
+    const data = await generateBackupData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const filename = getBackupFilename();
+    const savedToFolder = await saveBackupToFile(blob, filename);
+    toast(savedToFolder ? `✅ Backup salvo: ${filename}` : `✅ Backup baixado: ${filename}`, false, true);
+  } catch (err) { toast('Erro: ' + err.message, true); }
+}
+
+async function autoBackup() {
+  if (!autoBackupEnabled) return;
+  try {
+    const data = await generateBackupData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const filename = getBackupFilename();
+    await saveBackupToFile(blob, filename);
+    toast(`☁️ Backup automático: ${filename}`, false, true);
+  } catch (err) { console.error('Erro backup:', err); }
+}
+
+async function chooseBackupFolder() {
+  if (!window.showDirectoryPicker) { toast('Use Chrome ou Edge atualizado', true); return; }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    backupHandle = handle;
+    await setConfig('backup_folder_name', handle.name);
+    const testFile = await handle.getFileHandle('cellos_teste.txt', { create: true });
+    const writable = await testFile.createWritable();
+    await writable.write('Teste - pode apagar');
+    await writable.close();
+    document.getElementById('backupFolderPath').textContent = `📁 ${handle.name} (configurada)`;
+    toast('✅ Pasta configurada!');
+  } catch (err) { if (err.name !== 'AbortError') toast('Erro: ' + err.message, true); }
+}
+
+function toggleBackup() {
+  autoBackupEnabled = !autoBackupEnabled;
+  const toggle = document.getElementById('backupToggle');
+  const statusText = document.getElementById('backupStatusText');
+  const statusBadge = document.getElementById('backupStatusBadge');
+  toggle.classList.toggle('active', autoBackupEnabled);
+  statusText.textContent = autoBackupEnabled ? 'Ativado' : 'Desativado';
+  if (autoBackupEnabled) {
+    statusBadge.className = 'backup-status active';
+    statusBadge.textContent = '✅ Backup automático ativado';
+  } else {
+    statusBadge.className = 'backup-status inactive';
+    statusBadge.textContent = '⚠️ Backup automático desativado';
+  }
+  setConfig('auto_backup_enabled', autoBackupEnabled);
+}
+
+async function loadBackupSettings() {
+  try {
+    autoBackupEnabled = await getConfig('auto_backup_enabled', false);
+    const folderName = await getConfig('backup_folder_name', null);
+    const toggle = document.getElementById('backupToggle');
+    const statusText = document.getElementById('backupStatusText');
+    const statusBadge = document.getElementById('backupStatusBadge');
+    const folderPath = document.getElementById('backupFolderPath');
+    if (toggle) toggle.classList.toggle('active', autoBackupEnabled);
+    if (statusText) statusText.textContent = autoBackupEnabled ? 'Ativado' : 'Desativado';
+    if (autoBackupEnabled) {
+      if (statusBadge) { statusBadge.className = 'backup-status active'; statusBadge.textContent = '✅ Backup automático ativado'; }
+    } else {
+      if (statusBadge) { statusBadge.className = 'backup-status inactive'; statusBadge.textContent = '️ Backup automático desativado'; }
+    }
+    if (folderName && folderPath) folderPath.textContent = `📁 ${folderName} (configurada)`;
+    else if (folderPath) folderPath.textContent = 'Nenhuma pasta selecionada (usará Downloads)';
+  } catch (err) { console.error('Erro backup settings:', err); }
+}
+
+// ============ LOGIN ============
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { toast('Preencha usuário e senha', true); return; }
+  try {
+    const user = await getConfig('user', 'admin');
+    const pass = await getConfig('pass', '1234');
+    if (u === user && p === pass) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      await refreshAll();
+      await loadBackupSettings();
+      
+      // Tentar entrar em tela cheia após login (interação do usuário)
+      setTimeout(() => tryAutoFullscreen(), 500);
+      
+      if (autoBackupEnabled) setTimeout(() => autoBackup(), 1500);
+    } else toast('Usuário ou senha incorretos', true);
+  } catch (err) { toast('Erro ao verificar credenciais', true); }
+}
+
+function logout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  
+  // Sair da tela cheia ao fazer logout
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+async function emergencyReset() {
+  if (confirm('⚠️ ATENÇÃO: Isso vai RESETAR as credenciais para admin/1234 e limpar TODOS os dados. Deseja continuar?')) {
+    try {
+      await dbClear('clientes'); await dbClear('estoque');
+      await dbClear('orcamentos'); await dbClear('os'); await dbClear('vendas');
+      await dbClear('config'); await dbClear('counters');
+      await setConfig('user', 'admin');
+      await setConfig('pass', '1234');
+      await setConfig('nome', 'LV Assistência Técnica');
+      alert('✅ Sistema resetado! Credenciais: admin / 1234');
+      location.reload();
+    } catch (err) { alert('Erro: ' + err.message); }
+  }
+}
+
+// ============ CLIENTES ============
+
+async function saveCliente() {
+  const nome = document.getElementById('cNome').value.trim();
+  const tel = document.getElementById('cTel').value.trim();
+  const aparelho = document.getElementById('cAparelho').value.trim();
+  const cpf = document.getElementById('cCpf').value.trim();
+  const cep = document.getElementById('cCep').value.trim();
+  const rua = document.getElementById('cRua').value.trim();
+  const bairro = document.getElementById('cBairro').value.trim();
+  const cidade = document.getElementById('cCidade').value.trim();
+  
+  if (!nome) return toast('Nome obrigatório', true);
+  if (!tel) return toast('Telefone obrigatório', true);
+  if (!aparelho) return toast('Aparelho obrigatório', true);
+  if (!cpf) return toast('CPF obrigatório', true);
+  if (!cep) return toast('CEP obrigatório', true);
+  if (!rua) return toast('Rua obrigatória', true);
+  if (!bairro) return toast('Bairro obrigatório', true);
+  if (!cidade) return toast('Cidade obrigatória', true);
+  
+  await dbAdd('clientes', {
+    nome, tel, aparelho, cpf, cep, rua, bairro, cidade,
+    email: document.getElementById('cEmail').value,
+    imei: document.getElementById('cImei').value,
+    obs: document.getElementById('cObs').value,
+    data: now()
+  });
+  clearForm('c'); await renderClientes(); await fillSelects();
+  toast('Cliente salvo!');
+}
+
+async function renderClientes(s='') {
+  const list = (await dbGetAll('clientes')).filter(c => !s || c.nome.toLowerCase().includes(s.toLowerCase()));
+  const t = document.getElementById('clientesTable');
+  t.innerHTML = `<tr><th>Cliente</th><th>Contato</th><th>Endereço</th><th>Aparelho</th><th>Ações</th></tr>` +
+    (list.length ? list.map(c => `<tr>
+      <td><strong>${formatText(c.nome)}</strong><br><small style="color:var(--text-dim)">${c.cpf||''}</small></td>
+      <td>${c.tel||'-'}<br><small style="color:var(--text-dim)">${c.email||''}</small></td>
+      <td><small>${c.rua||''}, ${c.bairro||''}<br>${c.cidade||''} - CEP: ${c.cep||''}</small></td>
+      <td>${c.aparelho||'-'}<br><small style="color:var(--text-dim)">${c.imei||''}</small></td>
+      <td>
+        <button class="btn btn-sm btn-whatsapp" onclick="whatsappCliente(${c.id})">💬</button>
+        <button class="btn btn-sm btn-secondary" onclick="printCliente(${c.id})">🖨️</button>
+        <button class="btn btn-sm btn-danger" onclick="delCliente(${c.id})">🗑️</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="5" class="empty-row">Nenhum cliente</td></tr>');
+}
+
+async function whatsappCliente(id) {
+  const c = await dbGet('clientes', id);
+  const cfg = await getStoreConfig();
+  openWhatsApp(c.tel, getTemplate('greeting', { clientName: c.nome, storeName: cfg.nome, storePhone: cfg.tel }));
+}
+
+async function delCliente(id) {
+  showModal('Excluir', 'Deseja excluir?', async () => {
+    await dbDelete('clientes', id);
+    await renderClientes(); await fillSelects();
+    toast('Excluído');
+  });
+}
+
+async function printCliente(id) {
+  const c = await dbGet('clientes', id);
+  const cfg = await getStoreConfig();
+  printDoc(`<h2>${cfg.nome}</h2><p>${cfg.tel} | ${cfg.doc}</p><hr style="margin:10px 0">
+    <h3>Ficha do Cliente</h3>
+    <p><strong>Nome:</strong> ${formatText(c.nome)}</p>
+    <p><strong>CPF:</strong> ${c.cpf||'-'}</p>
+    <p><strong>Telefone:</strong> ${c.tel||'-'}</p>
+    <p><strong>E-mail:</strong> ${c.email||'-'}</p>
+    <p><strong>Endereço:</strong> ${c.rua||''}, ${c.bairro||''} - ${c.cidade||''}</p>
+    <p><strong>CEP:</strong> ${c.cep||'-'}</p>
+    <p><strong>Aparelho:</strong> ${c.aparelho||'-'}</p>
+    <p><strong>IMEI:</strong> ${c.imei||'-'}</p>
+    <p><strong>Obs:</strong> ${c.obs||'-'}</p>
+    <p style="margin-top:20px"><small>${cfg.endereco||''}</small></p>`);
+}
+
+// ============ ESTOQUE ============
+
+let estoqueFilter = 'all';
+function filterEstoque(t, el) {
+  estoqueFilter = t;
+  document.querySelectorAll('#estoque .tab').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  renderEstoque();
+}
+
+async function saveEstoque() {
+  const item = document.getElementById('eItem').value.trim();
+  if (!item) return toast('Item obrigatório', true);
+  await dbAdd('estoque', {
+    item, tipo: document.getElementById('eTipo').value,
+    qtd: Number(document.getElementById('eQtd').value)||0,
+    custo: Number(document.getElementById('eCusto').value)||0,
+    venda: Number(document.getElementById('eVenda').value)||0,
+    min: Number(document.getElementById('eMin').value)||0
+  });
+  clearForm('e'); await renderEstoque(); await fillSelects();
+  toast('Item salvo!');
+}
+
+async function renderEstoque(_, s='') {
+  const list = (await dbGetAll('estoque')).filter(i => (estoqueFilter==='all'||i.tipo===estoqueFilter) && (!s||i.item.toLowerCase().includes(s.toLowerCase())));
+  const t = document.getElementById('estoqueTable');
+  t.innerHTML = `<tr><th>Item</th><th>Tipo</th><th>Qtd</th><th>Venda</th><th>Status</th><th>Ações</th></tr>` +
+    (list.length ? list.map(i => {
+      const low = i.qtd <= i.min;
+      return `<tr><td><strong>${formatText(i.item)}</strong></td><td><span class="badge badge-info">${i.tipo}</span></td>
+        <td>${i.qtd}</td><td>${fmt(i.venda)}</td>
+        <td>${low?'<span class="badge badge-low">⚠ Baixo</span>':'<span class="badge badge-ok">OK</span>'}</td>
+        <td><button class="btn btn-sm btn-secondary" onclick="editEstoque(${i.id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="delEstoque(${i.id})">🗑️</button></td></tr>`;
+    }).join('') : '<tr><td colspan="6" class="empty-row">Nenhum item</td></tr>');
+}
+
+async function editEstoque(id) {
+  const i = await dbGet('estoque', id);
+  const q = prompt('Nova quantidade:', i.qtd);
+  if (q !== null) { i.qtd = Number(q)||0; await dbUpdate('estoque', i); await renderEstoque(); await fillSelects(); }
+}
+
+async function delEstoque(id) {
+  showModal('Excluir', 'Excluir item?', async () => {
+    await dbDelete('estoque', id);
+    await renderEstoque(); await fillSelects();
+    toast('Excluído');
+  });
+}
+
+// ============ ORÇAMENTOS ============
+
+async function saveOrcamento() {
+  const cid = document.getElementById('oCliente').value;
+  if (!cid) return toast('Selecione cliente', true);
+  const c = await dbGet('clientes', Number(cid));
+  const num = await getNextCounter('orc');
+  await dbAdd('orcamentos', {
+    numero: num, clienteId: Number(cid), clienteNome: c.nome,
+    aparelho: document.getElementById('oAparelho').value,
+    imei: document.getElementById('oImei').value,
+    valor: Number(document.getElementById('oValor').value)||0,
+    status: document.getElementById('oStatus').value,
+    obs: document.getElementById('oObs').value,
+    data: now()
+  });
+  clearForm('o'); await renderOrcamentos();
+  toast('Orçamento salvo!');
+}
+
+async function renderOrcamentos(s='') {
+  const list = (await dbGetAll('orcamentos')).filter(o => !s || o.clienteNome.toLowerCase().includes(s.toLowerCase()));
+  const t = document.getElementById('orcamentosTable');
+  const badge = st => st==='Aprovado'?'badge-approved':st==='Reprovado'?'badge-rejected':'badge-pending';
+  t.innerHTML = `<tr><th>Nº</th><th>Cliente</th><th>Aparelho</th><th>Valor</th><th>Status</th><th>Ações</th></tr>` +
+    (list.length ? list.map(o => `<tr>
+      <td><strong>#${String(o.numero).padStart(4,'0')}</strong></td><td>${formatText(o.clienteNome)}</td>
+      <td>${o.aparelho||'-'}</td><td>${fmt(o.valor)}</td>
+      <td><span class="badge ${badge(o.status)}">${o.status}</span></td>
+      <td>
+        <button class="btn btn-sm btn-whatsapp" onclick="whatsappOrcamento(${o.id})">💬</button>
+        <button class="btn btn-sm btn-secondary" onclick="printOrcamento(${o.id})">🖨️</button>
+        <button class="btn btn-sm btn-secondary" onclick="changeStatusOrc(${o.id})">🔄</button>
+        <button class="btn btn-sm btn-danger" onclick="delOrc(${o.id})">🗑️</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="6" class="empty-row">Nenhum orçamento</td></tr>');
+}
+
+async function whatsappOrcamento(id) {
+  const o = await dbGet('orcamentos', id);
+  const cfg = await getStoreConfig();
+  const c = await dbGet('clientes', o.clienteId);
+  openWhatsApp(c.tel, getTemplate('budget', {
+    clientName: o.clienteNome, osNumber: o.numero, device: o.aparelho,
+    value: o.valor, observation: o.obs, storeName: cfg.nome, storePhone: cfg.tel
+  }));
+}
+
+async function changeStatusOrc(id) {
+  const o = await dbGet('orcamentos', id);
+  const opts = ['Pendente','Aprovado','Reprovado'];
+  const n = prompt('1-Pendente\n2-Aprovado\n3-Reprovado', '1');
+  if (n && opts[n-1]) { o.status = opts[n-1]; await dbUpdate('orcamentos', o); await renderOrcamentos(); }
+}
+
+async function delOrc(id) {
+  showModal('Excluir', 'Excluir?', async () => {
+    await dbDelete('orcamentos', id);
+    await renderOrcamentos();
+    toast('Excluído');
+  });
+}
+
+async function printOrcamento(id) {
+  const o = await dbGet('orcamentos', id);
+  const cfg = await getStoreConfig();
+  printDoc(`<h2>${cfg.nome}</h2><p>${cfg.tel} | ${cfg.doc}</p><hr style="margin:10px 0">
+    <h3>ORÇAMENTO #${String(o.numero).padStart(4,'0')}</h3>
+    <p><strong>Data:</strong> ${o.data}</p><p><strong>Cliente:</strong> ${formatText(o.clienteNome)}</p>
+    <p><strong>Aparelho:</strong> ${o.aparelho||'-'}</p><p><strong>IMEI:</strong> ${o.imei||'-'}</p>
+    <p><strong>Defeito/Obs:</strong> ${o.obs||'-'}</p>
+    <h3 style="margin-top:20px">Valor: ${fmt(o.valor)}</h3><p><strong>Status:</strong> ${o.status}</p>
+    <p style="margin-top:40px">_______________________________<br>Assinatura</p>
+    <p style="margin-top:20px"><small>${cfg.endereco||''}</small></p>`);
+}
+
+// ============ OS ============
+
+async function saveOS() {
+  const cid = document.getElementById('osCliente').value;
+  if (!cid) return toast('Selecione cliente', true);
+  const c = await dbGet('clientes', Number(cid));
+  const num = await getNextCounter('os');
+  const gar = await getConfig('garantia', 90);
+  const tecnico = document.getElementById('osTecnico').value.trim() || 'Diego Vasconcelos';
+  await dbAdd('os', {
+    numero: num, clienteId: Number(cid), clienteNome: c.nome,
+    aparelho: document.getElementById('osAparelho').value,
+    peca: document.getElementById('osPeca').value,
+    tecnico: tecnico,
+    valor: Number(document.getElementById('osValor').value)||0,
+    status: document.getElementById('osStatus').value,
+    obs: document.getElementById('osObs').value,
+    data: now(), garantiaDias: gar,
+    dataEntrada: today(), dataSaida: null
+  });
+  clearForm('os'); await renderOS(); await fillGarantiaSelect();
+  toast('OS criada!');
+}
+
+async function renderOS(s='') {
+  const list = (await dbGetAll('os')).filter(o => !s || o.clienteNome.toLowerCase().includes(s.toLowerCase()));
+  const t = document.getElementById('osTable');
+  t.innerHTML = `<tr><th>OS</th><th>Cliente</th><th>Aparelho</th><th>Peça</th><th>Status</th><th>Ações</th></tr>` +
+    (list.length ? list.map(o => `<tr>
+      <td><strong>#${String(o.numero).padStart(4,'0')}</strong></td><td>${formatText(o.clienteNome)}</td>
+      <td>${o.aparelho||'-'}</td><td>${o.peca||'-'}</td>
+      <td><span class="badge badge-info">${o.status}</span></td>
+      <td>
+        <button class="btn btn-sm btn-whatsapp" onclick="whatsappOS(${o.id})">💬</button>
+        <button class="btn btn-sm btn-secondary" onclick="printOS(${o.id})">🖨️</button>
+        <button class="btn btn-sm btn-secondary" onclick="changeStatusOS(${o.id})">🔄</button>
+        <button class="btn btn-sm btn-danger" onclick="delOS(${o.id})">🗑️</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="6" class="empty-row">Nenhuma OS</td></tr>');
+}
+
+async function whatsappOS(id) {
+  const o = await dbGet('os', id);
+  const cfg = await getStoreConfig();
+  const c = await dbGet('clientes', o.clienteId);
+  let template = o.status === 'Pronto para retirada' || o.status === 'Concluída' ? 'osReady' : 'osReceived';
+  openWhatsApp(c.tel, getTemplate(template, {
+    clientName: o.clienteNome, osNumber: o.numero, device: o.aparelho,
+    value: o.valor, storeName: cfg.nome, storePhone: cfg.tel
+  }));
+}
+
+async function changeStatusOS(id) {
+  const o = await dbGet('os', id);
+  const opts = ['Recebido','Em análise','Aguardando aprovação','Aguardando peça','Em reparo','Teste final','Pronto para retirada','Concluída'];
+  const n = prompt(opts.map((x,i)=>`${i+1}-${x}`).join('\n'), '1');
+  if (n && opts[n-1]) { 
+    o.status = opts[n-1]; 
+    if (opts[n-1] === 'Concluída') o.dataSaida = today();
+    await dbUpdate('os', o); 
+    await renderOS(); 
+    await fillGarantiaSelect(); 
+  }
+}
+
+async function delOS(id) {
+  showModal('Excluir', 'Excluir OS?', async () => {
+    await dbDelete('os', id);
+    await renderOS(); await fillGarantiaSelect();
+    toast('Excluída');
+  });
+}
+
+async function printOS(id) {
+  const o = await dbGet('os', id);
+  const cfg = await getStoreConfig();
+  printDoc(`<h2>${cfg.nome}</h2><p>${cfg.tel} | ${cfg.doc}</p><hr style="margin:10px 0">
+    <h3>OS #${String(o.numero).padStart(4,'0')}</h3>
+    <p><strong>Data Entrada:</strong> ${o.dataEntrada || o.data}</p>
+    <p><strong>Data Saída:</strong> ${o.dataSaida || 'Pendente'}</p>
+    <p><strong>Cliente:</strong> ${formatText(o.clienteNome)}</p>
+    <p><strong>Aparelho:</strong> ${o.aparelho||'-'}</p><p><strong>Peça:</strong> ${o.peca||'-'}</p>
+    <p><strong>Técnico:</strong> ${formatText(o.tecnico||'')}</p>
+    <p><strong>Defeito/Obs:</strong> ${o.obs||'-'}</p>
+    <p><strong>Status:</strong> ${o.status}</p>
+    <h3 style="margin-top:20px">Valor: ${fmt(o.valor)}</h3>
+    <p><strong>Garantia:</strong> ${o.garantiaDias||90} dias</p>
+    <p style="margin-top:40px">_______________________________<br>Assinatura</p>
+    <p style="margin-top:20px"><small>${cfg.endereco||''}</small></p>`);
+}
+
+// ============ VENDAS ============
+
+async function saveVenda() {
+  const cid = document.getElementById('vCliente').value;
+  const iid = document.getElementById('vItem').value;
+  if (!cid) return toast('Selecione cliente', true);
+  const c = await dbGet('clientes', Number(cid));
+  const item = iid ? await dbGet('estoque', Number(iid)) : null;
+  const qtd = Number(document.getElementById('vQtd').value)||1;
+  const preco = Number(document.getElementById('vPreco').value)||0;
+  const desc = Number(document.getElementById('vDesc').value)||0;
+  const total = (preco * qtd) - desc;
+  const num = await getNextCounter('venda');
+  await dbAdd('vendas', {
+    numero: num, clienteId: Number(cid), clienteNome: c.nome,
+    itemId: iid ? Number(iid) : null, itemName: item ? item.item : '-',
+    qtd, preco, desc, total,
+    pag: document.getElementById('vPag').value,
+    obs: document.getElementById('vObs').value,
+    data: now()
+  });
+  if (item) { item.qtd = Math.max(0, item.qtd - qtd); await dbUpdate('estoque', item); }
+  clearForm('v'); await renderVendas(); await fillSelects();
+  toast('Venda registrada!');
+}
+
+async function renderVendas(s='') {
+  const list = (await dbGetAll('vendas')).filter(v => !s || v.clienteNome.toLowerCase().includes(s.toLowerCase()));
+  const t = document.getElementById('vendasTable');
+  t.innerHTML = `<tr><th>Nº</th><th>Cliente</th><th>Item</th><th>Qtd</th><th>Total</th><th>Pagamento</th><th>Ações</th></tr>` +
+    (list.length ? list.map(v => `<tr>
+      <td><strong>#${String(v.numero).padStart(4,'0')}</strong></td><td>${formatText(v.clienteNome)}</td>
+      <td>${v.itemName}</td><td>${v.qtd}</td><td>${fmt(v.total)}</td><td>${v.pag}</td>
+      <td>
+        <button class="btn btn-sm btn-whatsapp" onclick="whatsappVenda(${v.id})">💬</button>
+        <button class="btn btn-sm btn-secondary" onclick="printVenda(${v.id})">️</button>
+        <button class="btn btn-sm btn-danger" onclick="delVenda(${v.id})">🗑️</button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="7" class="empty-row">Nenhuma venda</td></tr>');
+}
+
+async function whatsappVenda(id) {
+  const v = await dbGet('vendas', id);
+  const cfg = await getStoreConfig();
+  const c = await dbGet('clientes', v.clienteId);
+  openWhatsApp(c.tel, getTemplate('sale', {
+    clientName: v.clienteNome, saleNumber: v.numero, itemName: v.itemName,
+    total: v.total, storeName: cfg.nome
+  }));
+}
+
+async function delVenda(id) {
+  showModal('Excluir', 'Excluir venda?', async () => {
+    await dbDelete('vendas', id);
+    await renderVendas();
+    toast('Excluída');
+  });
+}
+
+async function fillPrice() {
+  const id = document.getElementById('vItem').value;
+  if (id) { const item = await dbGet('estoque', Number(id)); if (item) document.getElementById('vPreco').value = item.venda || 0; }
+}
+
+async function printVenda(id) {
+  const v = await dbGet('vendas', id);
+  const cfg = await getStoreConfig();
+  printDoc(`<h2>${cfg.nome}</h2><p>${cfg.tel} | ${cfg.doc}</p><hr style="margin:10px 0">
+    <h3>VENDA #${String(v.numero).padStart(4,'0')}</h3>
+    <p><strong>Data:</strong> ${v.data}</p><p><strong>Cliente:</strong> ${formatText(v.clienteNome)}</p>
+    <p><strong>Item:</strong> ${v.itemName}</p><p><strong>Qtd:</strong> ${v.qtd}</p>
+    <p><strong>Preço:</strong> ${fmt(v.preco)}</p><p><strong>Desconto:</strong> ${fmt(v.desc)}</p>
+    <h3 style="margin-top:20px">TOTAL: ${fmt(v.total)}</h3>
+    <p><strong>Pagamento:</strong> ${v.pag}</p>
+    <p style="margin-top:20px"><small>${cfg.endereco||''}</small></p>`);
+}
+
+async function autoFillOS() {
+  const cid = document.getElementById('osCliente').value;
+  if (!cid) { document.getElementById('osAparelho').value = ''; return; }
+  const c = await dbGet('clientes', Number(cid));
+  if (c && c.aparelho) document.getElementById('osAparelho').value = c.aparelho;
+}
+
+async function fillGarantiaSelect() {
+  const osList = await dbGetAll('os');
+  document.getElementById('gOS').innerHTML = '<option value="">Selecione...</option>' + 
+    osList.map(o => `<option value="${o.id}">OS #${String(o.numero).padStart(4,'0')} - ${formatText(o.clienteNome)} [${o.status}]</option>`).join('');
+}
+
+async function loadOSGarantia() {
+  const id = document.getElementById('gOS').value;
+  const info = document.getElementById('gInfo');
+  if (!id) { info.innerHTML = 'Selecione uma OS'; return; }
+  const o = await dbGet('os', Number(id));
+  const gar = await getConfig('garantia', 90);
+  info.innerHTML = `<strong>OS #${String(o.numero).padStart(4,'0')}</strong> - ${formatText(o.clienteNome)}<br>
+    Aparelho: ${o.aparelho||'-'} | Peça: ${o.peca||'-'}<br>
+    Técnico: ${formatText(o.tecnico||'')}<br>
+    Valor: ${fmt(o.valor)} | Status: ${o.status}<br>
+    <strong>Entrada:</strong> ${o.dataEntrada || o.data}<br>
+    <strong>Saída:</strong> ${o.dataSaida || 'Pendente'}<br>
+    Garantia: ${o.garantiaDias||gar} dias`;
+  document.getElementById('gDias').value = o.garantiaDias || gar;
+}
+
+async function saveGarantia() {
+  const id = document.getElementById('gOS').value;
+  if (!id) return toast('Selecione OS', true);
+  const o = await dbGet('os', Number(id));
+  o.garantiaDias = Number(document.getElementById('gDias').value)||90;
+  o.dataSaida = today();
+  o.status = 'Concluída';
+  await dbUpdate('os', o);
+  await loadOSGarantia();
+  await renderOS();
+  await fillGarantiaSelect();
+  toast('✅ Garantia atualizada e OS concluída!');
+}
+
+async function printGarantia(type = 'thermal') {
+  const id = document.getElementById('gOS').value;
+  if (!id) return toast('Selecione OS', true);
+  const o = await dbGet('os', Number(id));
+  const c = await dbGet('clientes', o.clienteId);
+  const gar = await getConfig('garantia', 90);
+  const dias = o.garantiaDias || gar;
+  const cfg = await getStoreConfig();
+  const venc = new Date();
+  venc.setDate(venc.getDate() + dias);
+  const dataEntrada = o.dataEntrada || o.data;
+  const dataSaida = o.dataSaida || today();
+  
+  if (type === 'thermal') {
+    printDoc(`
+      <div class="center"><h2>${cfg.nome}</h2></div>
+      <p class="center">${cfg.tel}</p>
+      <p class="center">${cfg.doc}</p>
+      <div class="double-divider"></div>
+      <h3>TERMO DE GARANTIA</h3>
+      <div class="divider"></div>
+      <p><span class="bold">OS:</span> #${String(o.numero).padStart(4,'0')}</p>
+      <p><span class="bold">Entrada:</span> ${dataEntrada}</p>
+      <p><span class="bold">Saída:</span> ${dataSaida}</p>
+      <div class="divider"></div>
+      <p><span class="bold">Cliente:</span> ${formatText(o.clienteNome)}</p>
+      <p><span class="bold">CPF:</span> ${c.cpf || '-'}</p>
+      <p><span class="bold">Endereço:</span></p>
+      <p>${c.rua || '-'}, ${c.bairro || '-'}</p>
+      <p>${c.cidade || '-'} - CEP: ${c.cep || '-'}</p>
+      <div class="divider"></div>
+      <p><span class="bold">Aparelho:</span></p>
+      <p>${o.aparelho || 'Não informado'}</p>
+      <div class="divider"></div>
+      <p><span class="bold">Peça/Serviço:</span></p>
+      <p>${o.peca || 'Não informado'}</p>
+      <div class="divider"></div>
+      <p><span class="bold">Técnico:</span> ${formatText(o.tecnico || 'Diego Vasconcelos')}</p>
+      <p><span class="bold">Valor:</span> ${fmt(o.valor)}</p>
+      <div class="divider"></div>
+      <div class="warranty-box">
+        <p class="center bold">GARANTIA DE ${dias} DIAS</p>
+        <p class="center">Válido até: ${venc.toLocaleDateString('pt-BR')}</p>
+      </div>
+      <div class="divider"></div>
+      <p class="bold">COBERTURA:</p>
+      <p>✓ Defeitos de fabricação</p>
+      <p>✓ Problemas no serviço</p>
+      <div class="divider"></div>
+      <p class="bold">NÃO COBRE:</p>
+      <p>✗ Mau uso</p>
+      <p>✗ Quedas/impactos</p>
+      <p>✗ Líquidos</p>
+      <p>✗ Danos externos</p>
+      <div class="divider"></div>
+      <div class="signature">
+        <p class="bold">LV ASSISTÊNCIA TÉCNICA</p>
+        <div class="signature-line"></div>
+        <p>${formatText(o.tecnico || 'Diego Vasconcelos')}</p>
+        <p style="font-size:7px;margin-top:1mm">Técnico Responsável</p>
+      </div>
+      <div class="footer">
+        <p>${cfg.endereco || ''}</p>
+        <p>Obrigado pela preferência!</p>
+      </div>
+    `);
+  } else {
+    printDoc(`
+      <div style="max-width: 210mm; margin: 0 auto; padding: 20mm; font-family: Arial, sans-serif; font-size: 12px;">
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+          <h2 style="margin: 0; font-size: 24px;">${cfg.nome}</h2>
+          <p style="margin: 5px 0;">${cfg.tel} | ${cfg.doc}</p>
+          <p style="margin: 5px 0;">${cfg.endereco || ''}</p>
+        </div>
+        <h3 style="text-align: center; margin: 30px 0;">TERMO DE GARANTIA</h3>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>OS Nº:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">#${String(o.numero).padStart(4,'0')}</td>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Status:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">${o.status}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Data Entrada:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">${dataEntrada}</td>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Data Saída:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">${dataSaida}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Cliente:</strong></td>
+            <td colspan="3" style="padding: 8px; border: 1px solid #000;">${formatText(o.clienteNome)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>CPF:</strong></td>
+            <td colspan="3" style="padding: 8px; border: 1px solid #000;">${c.cpf || '-'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Endereço:</strong></td>
+            <td colspan="3" style="padding: 8px; border: 1px solid #000;">${c.rua || '-'}, ${c.bairro || ''} - ${c.cidade || ''} | CEP: ${c.cep || '-'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Aparelho:</strong></td>
+            <td colspan="3" style="padding: 8px; border: 1px solid #000;">${o.aparelho || 'Não informado'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Peça/Serviço:</strong></td>
+            <td colspan="3" style="padding: 8px; border: 1px solid #000;">${o.peca || 'Não informado'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Técnico:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">${formatText(o.tecnico || 'Diego Vasconcelos')}</td>
+            <td style="padding: 8px; border: 1px solid #000;"><strong>Valor:</strong></td>
+            <td style="padding: 8px; border: 1px solid #000;">${fmt(o.valor)}</td>
+          </tr>
+        </table>
+        <div style="border: 2px solid #000; padding: 15px; margin: 20px 0; text-align: center;">
+          <h4 style="margin: 0 0 10px 0;">GARANTIA DE ${dias} DIAS</h4>
+          <p style="margin: 0;"><strong>Válido até:</strong> ${venc.toLocaleDateString('pt-BR')}</p>
+        </div>
+        <div style="margin: 20px 0;">
+          <h4>COBERTURA DA GARANTIA:</h4>
+          <ul><li>Defeitos de fabricação da peça trocada</li><li>Problemas relacionados ao serviço realizado</li></ul>
+        </div>
+        <div style="margin: 20px 0;">
+          <h4>NÃO COBERTURA:</h4>
+          <ul><li>Mau uso ou acidentes</li><li>Quedas ou impactos</li><li>Contato com líquidos</li><li>Danos externos ou oxidação</li></ul>
+        </div>
+        <div style="margin-top: 50px; text-align: center;">
+          <p style="margin-bottom: 30px;">_________________________________________</p>
+          <p style="font-weight: bold; margin: 0;">${formatText(o.tecnico || 'Diego Vasconcelos')}</p>
+          <p style="margin: 5px 0;">Técnico Responsável</p>
+          <p style="margin: 5px 0; font-size: 10px;">${cfg.nome}</p>
+        </div>
+        <div style="margin-top: 40px; text-align: center; font-size: 9px; border-top: 1px solid #ccc; padding-top: 10px;">
+          <p>${cfg.endereco || ''}</p>
+          <p>Obrigado pela preferência!</p>
+        </div>
+      </div>
+    `);
+  }
+}
+
+function setDashboardPeriod(period, el) {
+  dashboardPeriod = period;
+  document.querySelectorAll('#dashboard .period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderDashboard();
+}
+
+function setReportPeriod(period, el) {
+  reportPeriod = period;
+  document.querySelectorAll('#relatorios .period-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderRelatorios();
+}
+
+async function renderDashboard() {
+  const vendas = (await dbGetAll('vendas')).filter(v => isDateInRange(v.data, dashboardPeriod));
+  const orc = await dbGetAll('orcamentos');
+  const osList = await dbGetAll('os');
+  const estoque = await dbGetAll('estoque');
+  const clientes = await dbGetAll('clientes');
+  
+  const totalVendas = vendas.reduce((s,v)=>s+v.total,0);
+  const osAbertas = osList.filter(o=>o.status!=='Concluída').length;
+  const lowStock = estoque.filter(i=>i.qtd<=i.min).length;
+  
+  const periodLabels = { today: 'Hoje', week: 'Esta Semana', month: 'Este Mês', year: 'Este Ano', all: 'Total Geral' };
+  
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card primary"><span class="stat-icon">👥</span><div class="stat-label">Clientes</div><div class="stat-value">${clientes.length}</div></div>
+    <div class="stat-card success"><span class="stat-icon">📦</span><div class="stat-label">Itens Estoque</div><div class="stat-value">${estoque.reduce((s,i)=>s+i.qtd,0)}</div></div>
+    <div class="stat-card warning"><span class="stat-icon"></span><div class="stat-label">Orçamentos</div><div class="stat-value">${orc.length}</div></div>
+    <div class="stat-card primary"><span class="stat-icon">🔧</span><div class="stat-label">OS Abertas</div><div class="stat-value">${osAbertas}</div></div>
+    <div class="stat-card success"><span class="stat-icon">💵</span><div class="stat-label">Vendas (${periodLabels[dashboardPeriod]})</div><div class="stat-value">${fmt(totalVendas)}</div></div>
+    <div class="stat-card danger"><span class="stat-icon">⚠️</span><div class="stat-label">Estoque Baixo</div><div class="stat-value">${lowStock}</div></div>
+  `;
+  
+  const low = estoque.filter(i=>i.qtd<=i.min);
+  document.getElementById('lowStockTable').innerHTML = `<tr><th>Item</th><th>Qtd</th><th>Mín</th><th>Status</th></tr>` +
+    (low.length ? low.map(i=>`<tr><td>${formatText(i.item)}</td><td>${i.qtd}</td><td>${i.min}</td><td><span class="badge badge-low">⚠</span></td></tr>`).join('') :
+    '<tr><td colspan="4" class="empty-row">Tudo OK! 👍</td></tr>');
+  
+  const recent = [
+    ...orc.map(o=>({tipo:'Orçamento',num:o.numero,cli:o.clienteNome,val:o.valor})),
+    ...osList.map(o=>({tipo:'OS',num:o.numero,cli:o.clienteNome,val:o.valor})),
+    ...vendas.map(v=>({tipo:'Venda',num:v.numero,cli:v.clienteNome,val:v.total}))
+  ].sort((a,b)=>b.num-a.num).slice(0,10);
+  
+  document.getElementById('recentTable').innerHTML = `<tr><th>Tipo</th><th>Nº</th><th>Cliente</th><th>Valor</th></tr>` +
+    (recent.length ? recent.map(r=>`<tr><td><span class="badge badge-info">${r.tipo}</span></td><td>#${String(r.num).padStart(4,'0')}</td><td>${formatText(r.cli)}</td><td>${fmt(r.val)}</td></tr>`).join('') :
+    '<tr><td colspan="4" class="empty-row">Sem movimentações</td></tr>');
+}
+
+async function renderRelatorios() {
+  const vendas = (await dbGetAll('vendas')).filter(v => isDateInRange(v.data, reportPeriod));
+  const orc = await dbGetAll('orcamentos');
+  const osList = await dbGetAll('os');
+  
+  const totalVendas = vendas.reduce((s,v)=>s+v.total,0);
+  const totalOrc = orc.reduce((s,o)=>s+o.valor,0);
+  const totalOS = osList.reduce((s,o)=>s+o.valor,0);
+  const osConcl = osList.filter(o=>o.status==='Concluída').length;
+  
+  const periodLabels = { today: 'Hoje', week: 'Esta Semana', month: 'Este Mês', year: 'Este Ano', all: 'Total Geral' };
+  
+  document.getElementById('relStats').innerHTML = `
+    <div class="stat-card success"><div class="stat-label">Total Vendas (${periodLabels[reportPeriod]})</div><div class="stat-value">${fmt(totalVendas)}</div></div>
+    <div class="stat-card warning"><div class="stat-label">Valor Orçamentos</div><div class="stat-value">${fmt(totalOrc)}</div></div>
+    <div class="stat-card primary"><div class="stat-label">Valor OS</div><div class="stat-value">${fmt(totalOS)}</div></div>
+    <div class="stat-card success"><div class="stat-label">OS Concluídas</div><div class="stat-value">${osConcl}</div></div>
+  `;
+  
+  const porPag = {};
+  vendas.forEach(v => porPag[v.pag] = (porPag[v.pag]||0) + v.total);
+  
+  document.getElementById('relContent').innerHTML = `
+    <h3 style="margin-bottom:12px">💳 Por Pagamento</h3>
+    <table><tr><th>Forma</th><th>Total</th></tr>
+    ${Object.keys(porPag).length ? Object.entries(porPag).map(([k,v])=>`<tr><td>${k}</td><td>${fmt(v)}</td></tr>`).join('') : '<tr><td colspan="2" class="empty-row">Sem dados</td></tr>'}
+    </table>
+    <h3 style="margin:20px 0 12px">📊 Orçamentos</h3>
+    <table><tr><th>Status</th><th>Qtd</th></tr>
+    <tr><td>Pendente</td><td>${orc.filter(o=>o.status==='Pendente').length}</td></tr>
+    <tr><td>Aprovado</td><td>${orc.filter(o=>o.status==='Aprovado').length}</td></tr>
+    <tr><td>Reprovado</td><td>${orc.filter(o=>o.status==='Reprovado').length}</td></tr>
+    </table>
+  `;
+}
+
+async function loadConfig() {
+  document.getElementById('cfgNome').value = await getConfig('nome', 'LV Assistência Técnica');
+  document.getElementById('cfgTel').value = await getConfig('tel', '');
+  document.getElementById('cfgWhatsapp').value = await getConfig('whatsapp', '');
+  document.getElementById('cfgDoc').value = await getConfig('doc', '');
+  document.getElementById('cfgGar').value = await getConfig('garantia', 90);
+  document.getElementById('cfgEnd').value = await getConfig('endereco', '');
+  document.getElementById('cfgUser').value = await getConfig('user', 'admin');
+  document.getElementById('cfgPass').value = await getConfig('pass', '');
+}
+
+async function saveConfig() {
+  await setConfig('nome', document.getElementById('cfgNome').value);
+  await setConfig('tel', document.getElementById('cfgTel').value);
+  await setConfig('whatsapp', document.getElementById('cfgWhatsapp').value);
+  await setConfig('doc', document.getElementById('cfgDoc').value);
+  await setConfig('garantia', Number(document.getElementById('cfgGar').value)||90);
+  await setConfig('endereco', document.getElementById('cfgEnd').value);
+  toast('Configurações salvas!');
+}
+
+async function saveUser() {
+  const u = document.getElementById('cfgUser').value.trim();
+  const p = document.getElementById('cfgPass').value;
+  if (!u || !p) return toast('Preencha usuário e senha', true);
+  await setConfig('user', u);
+  await setConfig('pass', p);
+  toast('Credenciais atualizadas! Faça login novamente.');
+}
+
+async function confirmReset() {
+  showModal('⚠️ ATENÇÃO', 'Isso apagará TODOS os dados. Continuar?', async () => {
+    await dbClear('clientes'); await dbClear('estoque');
+    await dbClear('orcamentos'); await dbClear('os'); await dbClear('vendas');
+    await dbClear('config'); await dbClear('counters');
+    location.reload();
+  });
+}
+
+async function fillSelects() {
+  const clientes = await dbGetAll('clientes');
+  const cOpts = clientes.map(c => `<option value="${c.id}">${formatText(c.nome)}</option>`).join('');
+  ['oCliente','osCliente','vCliente'].forEach(id => {
+    const el = document.getElementById(id);
+    const first = el.options[0].outerHTML;
+    el.innerHTML = first + cOpts;
+  });
+  const estoque = await dbGetAll('estoque');
+  document.getElementById('vItem').innerHTML = '<option value="">Selecione...</option>' + 
+    estoque.map(i => `<option value="${i.id}">${formatText(i.item)} (Qtd: ${i.qtd})</option>`).join('');
+  await fillGarantiaSelect();
+}
+
+async function exportData() {
+  const data = await generateBackupData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `cellos_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('Backup exportado!');
+}
+
+async function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try {
+      const imp = JSON.parse(ev.target.result);
+      showModal('Importar', 'Isso substituirá todos os dados. Continuar?', async () => {
+        await dbClear('clientes'); await dbClear('estoque');
+        await dbClear('orcamentos'); await dbClear('os'); await dbClear('vendas');
+        for (const c of imp.clientes) await dbAdd('clientes', c);
+        for (const e of imp.estoque) await dbAdd('estoque', e);
+        for (const o of imp.orcamentos) await dbAdd('orcamentos', o);
+        for (const o of imp.os) await dbAdd('os', o);
+        for (const v of imp.vendas) await dbAdd('vendas', v);
+        if (imp.config) {
+          await setConfig('nome', imp.config.nome);
+          await setConfig('tel', imp.config.tel);
+          await setConfig('whatsapp', imp.config.whatsapp);
+          await setConfig('doc', imp.config.doc);
+          await setConfig('garantia', imp.config.garantia);
+          await setConfig('endereco', imp.config.endereco);
+          await setConfig('user', imp.config.user);
+          await setConfig('pass', imp.config.pass);
+        }
+        await refreshAll();
+        toast('Dados importados!');
+      });
+    } catch { toast('Arquivo inválido', true); }
+  };
+  reader.readAsText(file);
+}
+
+async function refreshAll() {
+  await renderClientes();
+  await renderEstoque();
+  await renderOrcamentos();
+  await renderOS();
+  await renderVendas();
+  await fillSelects();
+  await renderDashboard();
+  await loadConfig();
+}
+
+(async () => {
+  try {
+    await initDB();
+    console.log('✅ LV Assistência - Sistema iniciado (v4.8 Final)');
+  } catch (err) {
+    console.error('❌ Erro:', err);
+    toast('Erro ao iniciar', true);
+  }
+})();
+</script>
+
+<script>
+/* =====================================================================
+   NOVO (v4.8+): RECIBOS DE VENDA  e  GARANTIA EM PDF -> WHATSAPP
+   Este bloco só ADICIONA funções. Nada do código acima foi alterado.
+   Não grava nada no IndexedDB/LocalStorage.
+   ===================================================================== */
+
+/* ---------- Utilidades locais ---------- */
+function lvEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* =====================================================================
+   1) RECIBOS DE VENDA
+   ===================================================================== */
+const RECIBO_LOJA = {
+  nome: 'LV ASSISTÊNCIA TÉCNICA',
+  cnpj: '33.242.147/0001-47',
+  endereco: 'Av. dos Autonomistas, 451, dentro do Supermercado Solar – Vila Yara – Osasco – São Paulo.'
+};
+let reciboHtmlAtual = '';
+
+function reciboAgora() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return {
+    data: `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`,
+    hora: `${p(d.getHours())}:${p(d.getMinutes())}`
+  };
+}
+
+function atualizarRelogioRecibo() {
+  const sec = document.getElementById('recibos');
+  if (!sec || !sec.classList.contains('active')) return;
+  const el = document.getElementById('rDataHora');
+  if (!el) return;
+  const a = reciboAgora();
+  el.value = `${a.data} às ${a.hora}`;
+}
+
+function atualizarTotalRecibo() {
+  const v = parseFloat(document.getElementById('rValor').value);
+  document.getElementById('rTotal').textContent = fmt(isNaN(v) ? 0 : v);
+}
+
+function lerRecibo() {
+  const produto = document.getElementById('rProduto').value.trim();
+  const valor = parseFloat(document.getElementById('rValor').value);
+  if (!produto) { toast('Informe o produto ou serviço', true); document.getElementById('rProduto').focus(); return null; }
+  if (isNaN(valor) || valor <= 0) { toast('Informe o valor da venda', true); document.getElementById('rValor').focus(); return null; }
+  return {
+    produto, valor,
+    cliente: document.getElementById('rCliente').value.trim(),
+    obs: document.getElementById('rObs').value.trim()
+  };
+}
+
+function montarRecibo(d) {
+  const a = reciboAgora();
+  const html = `<div class="recibo-sheet">
+    <div class="r-nome">${lvEsc(RECIBO_LOJA.nome)}</div>
+    <div class="r-small">CNPJ: ${lvEsc(RECIBO_LOJA.cnpj)}</div>
+    <div class="r-small">${lvEsc(RECIBO_LOJA.endereco)}</div>
+    <div class="r-div"></div>
+    <div class="r-title">RECIBO DE VENDA</div>
+    <div class="r-small" style="margin-top:0.6mm">Data: <b>${a.data}</b> &nbsp; Hora: <b>${a.hora}</b></div>
+    <div class="r-div"></div>
+    ${d.cliente ? `<div class="r-block"><div class="r-label">Cliente</div><div class="r-val">${lvEsc(d.cliente)}</div></div>` : ''}
+    <div class="r-block"><div class="r-label">Produto / Serviço</div><div class="r-val">${lvEsc(d.produto)}</div></div>
+    <div class="r-total" style="margin-top:1.5mm"><span>TOTAL</span><span>${fmt(d.valor)}</span></div>
+    ${d.obs ? `<div class="r-block" style="margin-top:1.5mm"><div class="r-label">Observações</div><div class="r-obs">${lvEsc(d.obs).replace(/\r?\n/g, '<br>')}</div></div>` : ''}
+    <div class="r-div"></div>
+    <div class="r-small">Obrigado pela preferência!</div>
+  </div>`;
+  reciboHtmlAtual = html;
+  return html;
+}
+
+function visualizarRecibo() {
+  const d = lerRecibo();
+  if (!d) return;
+  document.getElementById('reciboPreview').innerHTML = montarRecibo(d);
+  document.getElementById('reciboModal').classList.add('active');
+}
+
+function fecharPreviaRecibo() {
+  document.getElementById('reciboModal').classList.remove('active');
+}
+
+function fimImpressaoRecibo() {
+  document.body.classList.remove('printing-receipt');
+}
+window.addEventListener('afterprint', fimImpressaoRecibo);
+
+function imprimirRecibo(usarPrevia) {
+  let html;
+  if (usarPrevia === true && reciboHtmlAtual) {
+    html = reciboHtmlAtual; /* imprime exatamente o que está na pré-visualização */
+  } else {
+    const d = lerRecibo();
+    if (!d) return;
+    html = montarRecibo(d);
+  }
+  document.getElementById('receiptPrintArea').innerHTML = html;
+  document.body.classList.add('printing-receipt');
+  try { window.print(); }
+  finally { setTimeout(fimImpressaoRecibo, 1500); }
+}
+
+function limparRecibo() {
+  ['rProduto', 'rValor', 'rCliente', 'rObs'].forEach(id => { document.getElementById(id).value = ''; });
+  atualizarTotalRecibo();
+  document.getElementById('rProduto').focus();
+}
+
+/* Relógio automático (só atualiza enquanto a seção Recibos está aberta) */
+setInterval(atualizarRelogioRecibo, 1000);
+(function () {
+  const nav = document.querySelector('.nav-item[onclick*="\'recibos\'"]');
+  if (nav) nav.addEventListener('click', () => setTimeout(() => {
+    atualizarRelogioRecibo();
+    const p = document.getElementById('rProduto'); if (p) p.focus();
+  }, 60));
+})();
+
+/* =====================================================================
+   2) GARANTIA -> PDF -> WHATSAPP
+   Reaproveita o modelo A4 já existente chamando printGarantia('a4') com a
+   função printDoc temporariamente interceptada (captura o HTML em vez de
+   abrir a impressão). Nenhum template foi duplicado ou alterado.
+   O PDF é gerado localmente (sem bibliotecas externas): o termo é
+   renderizado em A4 e embutido em um PDF montado por este bloco.
+   ===================================================================== */
+const GAR_PDF = { w: 794, h: 1123, escala: 2, qualidade: 0.92 }; /* A4 @96dpi */
+let garWaBusy = false;
+let garWaUltimo = null; /* { numero, nomeCliente, arquivo } para reabrir o WhatsApp */
+
+/* HTML do termo A4 exatamente como o botão "Imprimir A4" o monta */
+async function garantiaCapturarHtmlA4() {
+  const original = window.printDoc;
+  let capturado = null;
+  window.printDoc = html => { capturado = html; };
+  try { await printGarantia('a4'); }
+  finally { window.printDoc = original; }
+  return capturado;
+}
+
+/* Regras globais da página que afetam o termo A4 (espelham o CSS do sistema) */
+const GAR_PDF_CSS = "*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}" +
+  "table{width:100%;border-collapse:collapse}td{font-size:14px}";
+
+async function garantiaHtmlParaJpegs(html) {
+  const W = GAR_PDF.w, PH = GAR_PDF.h, S = GAR_PDF.escala;
+  const host = document.createElement('div');
+  host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;`;
+  const inner = document.createElement('div');
+  inner.style.cssText = `width:${W}px;background:#fff;color:#000;`;
+  inner.innerHTML = html;
+  host.appendChild(inner);
+  document.body.appendChild(host);
+  let xhtml, alturaConteudo;
+  try {
+    alturaConteudo = Math.ceil(inner.scrollHeight);
+    xhtml = new XMLSerializer().serializeToString(inner);
+  } finally { host.remove(); }
+
+  const paginas = 1; /* sempre 1 página A4: se o termo for mais alto, é reduzido para caber */
+  const fit = alturaConteudo > PH ? (PH - 4) / alturaConteudo : 1;
+  const H = paginas * PH;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">` +
+    `<foreignObject x="0" y="0" width="${W}" height="${H}">` +
+    `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;transform:scale(${fit});transform-origin:50% 0"><style>${GAR_PDF_CSS}</style>${xhtml}</div>` +
+    `</foreignObject></svg>`;
+  const img = new Image();
+  await new Promise((ok, erro) => {
+    img.onload = ok;
+    img.onerror = () => erro(new Error('Falha ao renderizar o termo de garantia'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+
+  const cheio = document.createElement('canvas');
+  cheio.width = W * S; cheio.height = H * S;
+  const cx = cheio.getContext('2d');
+  cx.fillStyle = '#fff'; cx.fillRect(0, 0, cheio.width, cheio.height);
+  cx.drawImage(img, 0, 0, cheio.width, cheio.height);
+
+  const jpegs = [];
+  for (let i = 0; i < paginas; i++) {
+    const pg = document.createElement('canvas');
+    pg.width = W * S; pg.height = PH * S;
+    const pc = pg.getContext('2d');
+    pc.fillStyle = '#fff'; pc.fillRect(0, 0, pg.width, pg.height);
+    pc.drawImage(cheio, 0, i * PH * S, W * S, PH * S, 0, 0, W * S, PH * S);
+    const blob = await new Promise(ok => pg.toBlob(ok, 'image/jpeg', GAR_PDF.qualidade));
+    if (!blob) throw new Error('Falha ao converter a página em imagem');
+    jpegs.push({ bytes: new Uint8Array(await blob.arrayBuffer()), w: pg.width, h: pg.height });
+  }
+  return jpegs;
+}
+
+/* Monta um PDF válido (A4, 1 imagem JPEG por página) sem bibliotecas */
+function garantiaMontarPdf(jpegs) {
+  const enc = new TextEncoder();
+  const partes = [];
+  let pos = 0;
+  const offs = [];
+  const push = d => { const b = typeof d === 'string' ? enc.encode(d) : d; partes.push(b); pos += b.length; };
+  const PW = 595.28, PHt = 841.89;
+  const n = jpegs.length;
+  const totalObjs = 2 + 3 * n;
+
+  push(new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  offs[1] = pos; push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  const kids = jpegs.map((_, i) => `${3 + 3 * i} 0 R`).join(' ');
+  offs[2] = pos; push(`2 0 obj\n<< /Type /Pages /Kids [${kids}] /Count ${n} >>\nendobj\n`);
+  jpegs.forEach((j, i) => {
+    const pg = 3 + 3 * i, ct = pg + 1, im = pg + 2;
+    offs[pg] = pos;
+    push(`${pg} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PHt}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
+    const conteudo = `q ${PW} 0 0 ${PHt} 0 0 cm /Im0 Do Q`;
+    offs[ct] = pos;
+    push(`${ct} 0 obj\n<< /Length ${conteudo.length} >>\nstream\n${conteudo}\nendstream\nendobj\n`);
+    offs[im] = pos;
+    push(`${im} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${j.w} /Height ${j.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${j.bytes.length} >>\nstream\n`);
+    push(j.bytes);
+    push('\nendstream\nendobj\n');
+  });
+  const xref = pos;
+  let t = `xref\n0 ${totalObjs + 1}\n0000000000 65535 f \n`;
+  for (let i = 1; i <= totalObjs; i++) t += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+  t += `trailer\n<< /Size ${totalObjs + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  push(t);
+  return new Blob(partes, { type: 'application/pdf' });
+}
+
+function garantiaBaixarBlob(blob, nome) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function garantiaMensagemWhatsApp(o, cfg, dias) {
+  return getTemplate('warranty', {
+    clientName: o.clienteNome, osNumber: o.numero, device: o.aparelho,
+    warrantyDays: dias, storeName: cfg.nome
+  });
+}
+
+async function enviarGarantiaWhatsApp() {
+  if (garWaBusy) return;
+  const id = document.getElementById('gOS').value;
+  if (!id) return toast('Selecione OS', true);
+  const o = await dbGet('os', Number(id));
+  const c = o ? await dbGet('clientes', o.clienteId) : null;
+  if (!o || !c) return toast('Cliente da OS não encontrado', true);
+  if (!formatWhatsAppNumber(c.tel || '')) return toast('Cliente sem telefone válido cadastrado', true);
+
+  garWaBusy = true;
+  const btn = document.getElementById('btnGarWhats');
+  if (btn) btn.disabled = true;
+  try {
+    toast('⏳ Gerando PDF da garantia...', false, true);
+    const html = await garantiaCapturarHtmlA4();
+    if (!html) throw new Error('Termo de garantia não gerado');
+    const jpegs = await garantiaHtmlParaJpegs(html);
+    const pdf = garantiaMontarPdf(jpegs);
+
+    const numero = String(o.numero).padStart(4, '0');
+    const nomeLimpo = String(o.clienteNome || 'Cliente').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Cliente';
+    const arquivo = `Garantia_OS-${numero}_${nomeLimpo}.pdf`;
+
+    garantiaBaixarBlob(pdf, arquivo); /* cópia salva no computador */
+
+    const cfg = await getStoreConfig();
+    const dias = o.garantiaDias || await getConfig('garantia', 90);
+    garWaUltimo = { telefone: c.tel, mensagem: garantiaMensagemWhatsApp(o, cfg, dias), arquivo, cliente: o.clienteNome, numero };
+    openWhatsApp(garWaUltimo.telefone, garWaUltimo.mensagem); /* conversa do cliente cadastrado */
+
+    document.getElementById('garWaBody').innerHTML =
+      `<p>✅ PDF salvo no computador (pasta de downloads do navegador):<br><strong>${lvEsc(arquivo)}</strong></p>` +
+      `<p style="margin-top:10px">📲 O WhatsApp foi aberto na conversa de <strong>${lvEsc(formatText(o.clienteNome))}</strong> (${lvEsc(c.tel)}).</p>` +
+      `<p style="margin-top:10px"><strong>Para enviar o PDF:</strong><br>` +
+      `1. No WhatsApp, clique no clipe 📎 (Anexar) e escolha <em>Documento</em>.<br>` +
+      `2. Selecione o arquivo acima (está em Downloads).<br>` +
+      `3. Clique em enviar.</p>` +
+      `<p style="margin-top:10px;color:var(--text-dim);font-size:12px">Dica: também dá para arrastar o arquivo da barra de downloads do navegador para dentro da conversa. ` +
+      `O WhatsApp não permite que o sistema anexe e envie o arquivo sozinho.</p>`;
+    document.getElementById('garWaModal').classList.add('active');
+  } catch (err) {
+    console.error('Erro ao gerar PDF da garantia:', err);
+    toast('Não foi possível gerar o PDF. Use "Imprimir A4" > Salvar como PDF.', true);
+  } finally {
+    garWaBusy = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function reabrirWhatsAppGarantia() {
+  if (garWaUltimo) openWhatsApp(garWaUltimo.telefone, garWaUltimo.mensagem);
+}
+function fecharModalGarantiaWa() {
+  document.getElementById('garWaModal').classList.remove('active');
+}
+</script>
+<div class="modal-bg" id="osPanel" onclick="if(event.target===this)lvClose('osPanel')"><div class="modal wide"><div id="osPanelBody"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="lvClose('osPanel')">Fechar</button></div></div></div>
+<div class="modal-bg" id="dashModal" onclick="if(event.target===this)lvClose('dashModal')"><div class="modal wide"><h3 id="dashModalTitle"></h3><div id="dashModalBody"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="lvClose('dashModal')">Fechar</button></div></div></div>
+<div class="modal-bg" id="garPdfView" onclick="if(event.target===this)lvFecharPdf()"><div class="modal wide"><h3>🛡️ Garantia (PDF)</h3><iframe id="garPdfFrame" style="width:100%;height:65vh;border:1px solid var(--border);border-radius:8px;background:#fff"></iframe><div class="modal-actions"><button class="btn btn-secondary" onclick="lvFecharPdf()">Fechar</button></div></div></div>
+<script>
+/* =====================================================================
+   v4.9 - Garantia em pasta mensal, WhatsApp, Dashboard, Histórico de OS.
+   Bloco que só ADICIONA/ENVOLVE funções. Dados antigos intactos: o histórico
+   fica no campo opcional "historico" do próprio registro da OS (IndexedDB),
+   por isso entra em backup/importação e OS antigas funcionam sem alteração.
+   ===================================================================== */
+const LV_MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const LV_TIPOS={obs:'Observação',retorno:'Cliente retornou',novo:'Novo atendimento',diag:'Diagnóstico realizado',orc:'Orçamento aprovado',peca:'Peça solicitada',inicio:'Serviço iniciado',reparo:'Reparo concluído',entrega:'Aparelho entregue',criada:'OS criada',status:'Status alterado',edicao:'Dados editados',garantia:'Garantia'};
+const lvNz=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const lvDig=s=>String(s||'').replace(/\D/g,'');
+const lvNum=n=>'#'+String(n).padStart(4,'0');
+const lvSum=a=>a.reduce((s,x)=>s+(Number(x.val!==undefined?x.val:x.valor)||0),0);
+const lvOpen=id=>document.getElementById(id).classList.add('active');
+const lvClose=id=>document.getElementById(id).classList.remove('active');
+function lvFmtD(d,h=true){if(!d||isNaN(d))return '-';const p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`+(h?` ${p(d.getHours())}:${p(d.getMinutes())}`:'');}
+/* Parser robusto: aceita "11/11/2026, 14:26:45" e "11/11/2026 14:26:45" (o parseDate original falha com a vírgula) */
+function lvD(s){if(!s)return null;const m=String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\D+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if(m)return new Date(+m[3],+m[2]-1,+m[1],+(m[4]||0),+(m[5]||0),+(m[6]||0));const d=new Date(s);return isNaN(d)?null:d;}
+function lvIn(p,d){if(p==='all')return true;if(!d)return false;const n=new Date();n.setHours(0,0,0,0);const fim=new Date(n.getTime()+864e5-1);
+  if(p==='today')return d.toDateString()===n.toDateString();
+  if(p==='week'){const w=new Date(n);w.setDate(w.getDate()-7);return d>=w&&d<=fim;}
+  if(p==='month')return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();
+  if(p==='year')return d.getFullYear()===n.getFullYear();return true;}
+
+/* ---------- 1) HISTÓRICO: gravação e ganchos (envolvem funções existentes) ---------- */
+async function lvLog(id,tipo,texto){const o=await dbGet('os',id);if(!o)return;o.historico=Array.isArray(o.historico)?o.historico:[];o.historico.push({ts:new Date().toISOString(),tipo,texto:texto||''});await dbUpdate('os',o);}
+(function(){
+  const _save=saveOS;window.saveOS=async function(){const antes=new Set((await dbGetAll('os')).map(x=>x.id));await _save();
+    const n=(await dbGetAll('os')).find(x=>!antes.has(x.id));if(n)await lvLog(n.id,'criada','OS criada e aparelho recebido (status: '+n.status+')');};
+  const _st=changeStatusOS;window.changeStatusOS=async function(id){const a=await dbGet('os',id);await _st(id);const b=await dbGet('os',id);
+    if(a&&b&&a.status!==b.status)await lvLog(id,'status',a.status+' → '+b.status);};
+  const _sg=saveGarantia;window.saveGarantia=async function(){const id=Number(document.getElementById('gOS').value);const a=id?await dbGet('os',id):null;await _sg();
+    if(a){const b=await dbGet('os',id);if(b&&b.status==='Concluída'&&(a.status!=='Concluída'||a.garantiaDias!==b.garantiaDias))await lvLog(id,'garantia','Garantia de '+b.garantiaDias+' dias registrada e OS concluída');}};
+  const _r=renderOS;window.renderOS=async function(s){await _r(s);
+    document.querySelectorAll('#osTable tr').forEach(tr=>{const b=tr.querySelector('button[onclick^="whatsappOS("]');if(!b||tr.querySelector('.lv-hist'))return;
+      const id=+b.getAttribute('onclick').match(/\((\d+)\)/)[1];
+      b.insertAdjacentHTML('beforebegin',`<button class="btn btn-sm btn-primary lv-hist" title="Histórico da OS" onclick="lvOsPanel(${id})">📋</button> `);
+      tr.children[0].style.cursor='pointer';tr.children[0].onclick=()=>lvOsPanel(id);});};
+  const _ss=showSection;window.showSection=function(id,el){_ss(id,el);if(id==='garantia')lvGarStatus();};
+})();
+
+/* ---------- 2) PAINEL / HISTÓRICO INDIVIDUAL DA OS ---------- */
+let lvCur=null;
+function lvTimeline(o){const h=Array.isArray(o.historico)?o.historico:[];const it=h.map(e=>({d:new Date(e.ts),tipo:e.tipo,txt:e.texto,der:false,h:true}));
+  if(!h.some(e=>e.tipo==='criada'))it.push({d:lvD(o.data),tipo:'criada',txt:'OS criada / aparelho recebido (registro original da OS)',der:true,h:true});
+  if(o.dataSaida&&!h.some(e=>e.tipo==='garantia'||(e.tipo==='status'&&/Concluída$/.test(e.txt||e.texto||''))))it.push({d:lvD(o.dataSaida),tipo:'entrega',txt:'OS concluída (data de saída registrada)',der:true,h:false});
+  return it.sort((a,b)=>(b.d||0)-(a.d||0));}
+async function lvOsPanel(id){
+  const o=await dbGet('os',id);if(!o)return toast('OS não encontrada',true);
+  const c=await dbGet('clientes',o.clienteId);const gpad=await getConfig('garantia',90);lvCur=id;
+  const dias=Number(o.garantiaDias||gpad);let gar;
+  if(o.dataSaida){const v=lvD(o.dataSaida);v.setDate(v.getDate()+dias);const r=Math.ceil((v-new Date())/864e5);gar=`${dias} dias · até ${lvFmtD(v,false)} (${r>=0?r+' dia(s) restantes':'vencida há '+(-r)+' dia(s)'})`;}else gar=`${dias} dias · contam a partir da conclusão`;
+  const tel=c?c.tel:'';const dg=lvDig(tel);
+  const all=await dbGetAll('os'),cls=await dbGetAll('clientes');
+  const ids=new Set([o.clienteId]);if(dg.length>=8)cls.forEach(x=>{if(lvDig(x.tel)===dg)ids.add(x.id);});
+  const outras=all.filter(x=>x.id!==o.id&&ids.has(x.clienteId)).sort((a,b)=>(lvD(b.data)||0)-(lvD(a.data)||0));
+  const E=lvEsc,f=(l,v)=>`<div><label>${l}</label>${v}</div>`;
+  document.getElementById('osPanelBody').innerHTML=`
+  <h3>🔧 OS ${lvNum(o.numero)} — ${E(formatText(o.clienteNome))}</h3>
+  <div class="os-grid">
+    ${f('Telefone',E(tel||'-'))}${f('Aparelho',E(o.aparelho||'-'))}${f('Data de entrada',E(o.dataEntrada||o.data||'-'))}
+    ${f('Situação atual','<span class="badge badge-info">'+E(o.status)+'</span>')}${f('Serviço / peça utilizada',E(o.peca||'-'))}${f('Valor',fmt(o.valor))}
+    ${f('Técnico',E(formatText(o.tecnico||'-')))}${f('Data de saída',E(o.dataSaida||'Pendente'))}${f('Garantia',E(gar))}
+    <div style="grid-column:1/-1"><label>Defeito relatado / observações</label>${E(o.obs||'-')}</div>
+  </div>
+  <div class="os-actions">
+    <button class="btn btn-whatsapp btn-sm" onclick="whatsappOS(${id})">💬 WhatsApp</button>
+    <button class="btn btn-whatsapp btn-sm" onclick="lvEnviarGarantia(${id})">📲 Enviar garantia</button>
+    <button class="btn btn-secondary btn-sm" onclick="lvVerGarantia(${id})">🛡️ Visualizar garantia</button>
+    <button class="btn btn-secondary btn-sm" onclick="printOS(${id})">🖨️ Imprimir OS</button>
+    <button class="btn btn-secondary btn-sm" onclick="lvStatus(${id})">🔄 Alterar status</button>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('lvEdit').style.display='block'">✏️ Editar informações</button>
+  </div>
+  <div id="lvEdit" style="display:none" class="panel"><div class="form-grid">
+    <div class="form-group"><label>Aparelho</label><input id="ed_aparelho" value="${E(o.aparelho||'')}"></div>
+    <div class="form-group"><label>Peça / serviço</label><input id="ed_peca" value="${E(o.peca||'')}"></div>
+    <div class="form-group"><label>Técnico</label><input id="ed_tecnico" value="${E(o.tecnico||'')}"></div>
+    <div class="form-group"><label>Valor (R$)</label><input id="ed_valor" type="number" step="0.01" value="${Number(o.valor)||0}"></div>
+    <div class="form-group"><label>Garantia (dias)</label><input id="ed_gar" type="number" value="${dias}"></div>
+    <div class="form-group full"><label>Defeito / observações</label><textarea id="ed_obs">${E(o.obs||'')}</textarea></div></div>
+    <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="lvSalvarEdicao(${id})">💾 Salvar (alterações ficam registradas no histórico)</button></div></div>
+  <div class="lv-sec">➕ Adicionar ao histórico</div>
+  <div class="form-grid"><div class="form-group"><label>Tipo</label><select id="hTipo">${['obs','retorno','novo','diag','orc','peca','inicio','reparo','entrega'].map(k=>`<option value="${k}">${LV_TIPOS[k]}</option>`).join('')}</select></div>
+  <div class="form-group full"><label>Observação</label><textarea id="hTexto" placeholder="Ex.: Cliente retornou informando falha no carregamento."></textarea></div></div>
+  <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="lvAddHist(${id})">Adicionar histórico</button></div>
+  <div class="lv-sec">🕒 Linha do tempo desta OS</div>
+  <div class="tl">${lvTimeline(o).map(e=>`<div class="tl-item ${e.der?'der':''}"><div class="tl-when">${lvFmtD(e.d,e.h)}${e.der?' · do registro original':''}</div><div class="tl-tipo">${E(LV_TIPOS[e.tipo]||e.tipo)}</div>${e.txt?`<div class="tl-txt">${E(e.txt)}</div>`:''}</div>`).join('')}</div>
+  <div class="lv-sec">👤 Atendimentos anteriores deste cliente (${outras.length})</div>
+  ${outras.length?outras.map(x=>`<div class="lv-row" onclick="lvOsPanel(${x.id})"><span><strong>${lvNum(x.numero)}</strong> · ${E(x.peca||x.aparelho||'-')}<br><small>${E(x.aparelho||'')} · ${E(x.dataEntrada||x.data||'')} · ${E(x.status)}</small></span><span>${fmt(x.valor)}</span></div>`).join(''):'<div class="lv-empty">Nenhuma outra OS para este cliente.</div>'}`;
+  lvOpen('osPanel');
+}
+async function lvAddHist(id){const t=document.getElementById('hTipo').value,x=document.getElementById('hTexto').value.trim();
+  if(!x&&t==='obs')return toast('Escreva a observação',true);await lvLog(id,t,x);toast('Histórico registrado');lvOsPanel(id);}
+async function lvStatus(id){await changeStatusOS(id);lvOsPanel(id);}
+async function lvSalvarEdicao(id){const o=await dbGet('os',id);const g=k=>document.getElementById('ed_'+k).value;
+  const novo={aparelho:g('aparelho').trim(),peca:g('peca').trim(),tecnico:g('tecnico').trim()||o.tecnico,valor:Number(g('valor'))||0,garantiaDias:Number(g('gar'))||o.garantiaDias,obs:g('obs')};
+  const nomes={aparelho:'Aparelho',peca:'Peça/serviço',tecnico:'Técnico',valor:'Valor',garantiaDias:'Garantia (dias)',obs:'Observações'};
+  const dif=Object.keys(novo).filter(k=>String(o[k]??'')!==String(novo[k]??'')).map(k=>`${nomes[k]}: "${o[k]??''}" → "${novo[k]??''}"`);
+  if(!dif.length)return toast('Nada foi alterado',false,true);
+  Object.assign(o,novo);o.historico=Array.isArray(o.historico)?o.historico:[];o.historico.push({ts:new Date().toISOString(),tipo:'edicao',texto:dif.join('\n')});
+  await dbUpdate('os',o);await renderOS();await fillGarantiaSelect();toast('OS atualizada');lvOsPanel(id);}
+
+/* ---------- 3) GARANTIA: pasta mensal + WhatsApp ---------- */
+let lvGarHandle=null,lvPdf=null;
+window.garantiaMensagemWhatsApp=()=>'Olá! Segue em anexo o documento de garantia referente ao serviço realizado em seu aparelho. Agradecemos pela preferência!';
+async function lvGarStatus(){const el=document.getElementById('gPastaStatus');if(!el)return;
+  if(!window.showDirectoryPicker){el.textContent='⚠️ Este navegador não permite escolher pasta (use Chrome ou Edge)';return;}
+  const h=lvGarHandle||await getConfig('garantias_dir_handle',null);
+  el.textContent=h&&h.kind==='directory'?`📁 ${h.name} (pasta configurada)`:'Nenhuma pasta selecionada';}
+async function lvEscolherPastaGar(){
+  if(!window.showDirectoryPicker){toast('Use Chrome ou Edge atualizado',true);return false;}
+  try{const h=await window.showDirectoryPicker({id:'lv-garantias',mode:'readwrite',startIn:'desktop'});
+    lvGarHandle=h;await setConfig('garantias_dir_handle',h);
+    let n=0;for await(const [nm,x] of h.entries()){if(x.kind==='directory'&&LV_MESES.some(m=>lvNz(nm).includes(lvNz(m))))n++;}
+    toast(`✅ Pasta "${h.name}" configurada (${n} subpasta(s) de mês encontradas)`);lvGarStatus();return true;
+  }catch(e){if(e.name!=='AbortError')toast('Não foi possível usar essa pasta: '+e.message,true);return false;}}
+async function lvGarDir(interativo){
+  if(!window.showDirectoryPicker)return{erro:'suporte'};
+  let h=lvGarHandle||await getConfig('garantias_dir_handle',null);
+  if(!h||!h.queryPermission)return{erro:'pasta'};
+  try{let p=await h.queryPermission({mode:'readwrite'});if(p!=='granted'&&interativo)p=await h.requestPermission({mode:'readwrite'});
+    if(p==='granted'){lvGarHandle=h;return{h};}}catch(e){}
+  return{erro:'permissao',h};}
+async function lvPastaMes(root,data){const mes=LV_MESES[data.getMonth()];
+  for await(const [nm,x] of root.entries()){if(x.kind==='directory'&&lvNz(nm).includes(lvNz(mes)))return{dir:x,nome:nm,criada:false};}
+  return{dir:await root.getDirectoryHandle(mes,{create:true}),nome:mes,criada:true};}
+async function lvSalvarNaPasta(root,blob,nome,data){
+  const mes=await lvPastaMes(root,data);let final=nome,i=1;
+  for(;;){try{await mes.dir.getFileHandle(final);i++;final=nome.replace(/\.pdf$/i,`_${i}.pdf`);}catch(e){if(e.name==='NotFoundError')break;throw e;}}
+  const fh=await mes.dir.getFileHandle(final,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();
+  const f=await fh.getFile();if(f.size!==blob.size)throw new Error('O arquivo gravado não confere com o PDF gerado');
+  return{arquivo:final,pasta:`${root.name} / ${mes.nome}`,criada:mes.criada,anoOk:lvNz(root.name).includes(String(data.getFullYear()))};}
+async function lvPrepGar(id){await fillGarantiaSelect();document.getElementById('gOS').value=String(id);await loadOSGarantia();}
+async function lvGerarPdf(o){const html=await garantiaCapturarHtmlA4();if(!html)throw new Error('Termo de garantia não gerado');
+  const pdf=garantiaMontarPdf(await garantiaHtmlParaJpegs(html));
+  const nome=String(o.clienteNome||'Cliente').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'Cliente';
+  return{pdf,arquivo:`Garantia_OS-${String(o.numero).padStart(4,'0')}_${nome}.pdf`};}
+function lvGarModal(html){document.getElementById('garWaBody').innerHTML=html;lvOpen('garWaModal');}
+function lvGarAviso(motivo,id){garWaUltimo=null;const E=lvEsc;
+  const msg={suporte:'Este navegador não permite gravar direto em uma pasta do computador. Use o Google Chrome ou Microsoft Edge.',
+    pasta:'Ainda não foi escolhida a pasta principal das garantias (a pasta "Garantias 2026").',
+    permissao:'O navegador perdeu a autorização de acesso à pasta das garantias (isso é normal ao reabrir o sistema) e ela não foi concedida agora.'}[motivo];
+  lvGarModal(`<p>⚠️ <strong>O PDF NÃO foi gerado nem salvo.</strong></p><p style="margin-top:8px">${msg}</p>
+  <div class="os-actions">${motivo!=='suporte'?`<button class="btn btn-primary btn-sm" onclick="lvEscolherPastaGar().then(ok=>{if(ok){lvClose('garWaModal');lvEnviar(${id},{})}})">📁 Escolher a pasta e continuar</button>`:''}
+  <button class="btn btn-secondary btn-sm" onclick="lvClose('garWaModal');lvEnviar(${id},{downloads:true})">⬇️ Baixar em Downloads mesmo assim</button></div>
+  <p style="color:var(--text-dim);font-size:12px">Nada é salvo em Downloads sem a sua escolha.</p>`);}
+async function lvEnviar(osId,opt){
+  if(garWaBusy)return;if(typeof osId==='number')await lvPrepGar(osId);
+  const id=document.getElementById('gOS').value;if(!id)return toast('Selecione OS',true);
+  const o=await dbGet('os',Number(id));const c=o?await dbGet('clientes',o.clienteId):null;
+  if(!o||!c)return toast('Cliente da OS não encontrado',true);
+  if(!formatWhatsAppNumber(c.tel||''))return toast('Cliente sem telefone válido cadastrado',true);
+  let dir=null;if(!opt.downloads){dir=await lvGarDir(true);if(dir.erro)return lvGarAviso(dir.erro,Number(id));}
+  garWaBusy=true;const btn=document.getElementById('btnGarWhats');if(btn)btn.disabled=true;
+  try{
+    toast('⏳ Gerando PDF da garantia...',false,true);
+    const g=await lvGerarPdf(o);lvPdf={blob:g.pdf,arquivo:g.arquivo};
+    let loc,logTxt;
+    if(opt.downloads){garantiaBaixarBlob(g.pdf,g.arquivo);loc=`⬇️ PDF baixado na pasta Downloads (por sua escolha):<br><strong>${lvEsc(g.arquivo)}</strong>`;logTxt='PDF da garantia baixado em Downloads';}
+    else{const r=await lvSalvarNaPasta(dir.h,g.pdf,g.arquivo,new Date());
+      loc=`✅ PDF gravado e conferido em:<br><strong>${lvEsc(r.pasta)}</strong><br>${lvEsc(r.arquivo)}${r.criada?' <em>(pasta do mês criada agora)</em>':''}`+(r.anoOk?'':`<br><span style="color:var(--warning)">⚠️ O nome da pasta escolhida não indica o ano atual.</span>`);
+      logTxt=`PDF da garantia salvo em ${r.pasta} (${r.arquivo})`;}
+    await lvLog(o.id,'garantia',logTxt);
+    const cfg=await getStoreConfig();garWaUltimo={telefone:c.tel,mensagem:garantiaMensagemWhatsApp(o,cfg,0),arquivo:g.arquivo};
+    const url=`https://wa.me/${formatWhatsAppNumber(c.tel)}?text=${encodeURIComponent(garWaUltimo.mensagem)}`;
+    const w=window.open(url,'_blank');
+    const podeCompartilhar=!!(navigator.canShare&&navigator.canShare({files:[new File([g.pdf],g.arquivo,{type:'application/pdf'})]}));
+    lvGarModal(`<p>${loc}</p>
+    <p style="margin-top:10px">📲 ${w?'WhatsApp aberto':'<strong>O navegador bloqueou a abertura do WhatsApp.</strong> Use o botão abaixo.'} na conversa de <strong>${lvEsc(formatText(o.clienteNome))}</strong> (${lvEsc(c.tel)}), com a mensagem pronta.</p>
+    <p style="margin-top:10px"><strong>Falta anexar o PDF.</strong> O WhatsApp não permite que o sistema anexe arquivos sozinho:</p>
+    <div class="os-actions">${podeCompartilhar?`<button class="btn btn-primary btn-sm" onclick="lvCompartilhar()">📤 Compartilhar PDF (menu do Windows)</button>`:''}
+    <button class="btn btn-whatsapp btn-sm" onclick="reabrirWhatsAppGarantia()">📲 Abrir conversa novamente</button></div>
+    <p style="color:var(--text-dim);font-size:12px">${podeCompartilhar?'O menu de compartilhamento anexa o PDF automaticamente, mas não deixa escolher o contato: selecione WhatsApp e depois o cliente. ':''}Alternativa: no WhatsApp clique no clipe 📎 → Documento e escolha o arquivo na pasta indicada acima.</p>`);
+  }catch(err){console.error(err);garWaUltimo=null;
+    lvGarModal(`<p>❌ <strong>Não foi possível concluir. O PDF NÃO foi salvo na pasta.</strong></p><p style="margin-top:8px">${lvEsc(err.message||err)}</p>
+    ${lvPdf?`<div class="os-actions"><button class="btn btn-secondary btn-sm" onclick="garantiaBaixarBlob(lvPdf.blob,lvPdf.arquivo)">⬇️ Baixar em Downloads mesmo assim</button></div>`:''}`);
+  }finally{garWaBusy=false;if(btn)btn.disabled=false;}}
+window.enviarGarantiaWhatsApp=()=>lvEnviar(undefined,{});
+const lvEnviarGarantia=id=>lvEnviar(id,{});
+async function lvCompartilhar(){if(!lvPdf)return;try{await navigator.share({files:[new File([lvPdf.blob],lvPdf.arquivo,{type:'application/pdf'})],text:garantiaMensagemWhatsApp()});}catch(e){if(e.name!=='AbortError')toast('Compartilhamento indisponível: '+e.message,true);}}
+async function lvVerGarantia(id){try{await lvPrepGar(id);const o=await dbGet('os',id);toast('⏳ Gerando documento...',false,true);const g=await lvGerarPdf(o);
+  if(window.lvUrlPdf)URL.revokeObjectURL(lvUrlPdf);window.lvUrlPdf=URL.createObjectURL(g.pdf);document.getElementById('garPdfFrame').src=lvUrlPdf;lvOpen('garPdfView');}
+  catch(e){toast('Não foi possível gerar a garantia: '+e.message,true);}}
+function lvFecharPdf(){lvClose('garPdfView');document.getElementById('garPdfFrame').src='about:blank';}
+
+/* ---------- 4) RECIBO: impressão 80 mm / 100% ---------- */
+window.montarRecibo=function(d){const a=reciboAgora(),E=lvEsc;
+  const html=`<div class="recibo-sheet">
+    <div class="r-nome">${E(RECIBO_LOJA.nome)}</div>
+    <div class="r-small">CNPJ: ${E(RECIBO_LOJA.cnpj)}</div>
+    <div class="r-small">${E(RECIBO_LOJA.endereco)}</div>
+    <div class="r-div"></div>
+    <div class="r-title">RECIBO DE VENDA</div>
+    <div class="r-small" style="margin-top:1mm">${a.data} &nbsp;•&nbsp; ${a.hora}</div>
+    <div class="r-div"></div>
+    ${d.cliente?`<div class="r-row"><span class="r-desc">Cliente: ${E(d.cliente)}</span></div><div class="r-div"></div>`:''}
+    <div class="r-label">Descrição</div>
+    <div class="r-row"><span class="r-desc">${E(d.produto)}</span><span class="r-price">${fmt(d.valor)}</span></div>
+    ${d.obs?`<div class="r-label" style="margin-top:2mm">Observações</div><div class="r-obs">${E(d.obs).replace(/\r?\n/g,'<br>')}</div>`:''}
+    <div class="r-div"></div>
+    <div class="r-total"><span>TOTAL</span><span>${fmt(d.valor)}</span></div>
+    <div class="r-msg">Recebemos o valor acima referente ao produto/serviço descrito.</div>
+    <div class="r-sign">Assinatura / Carimbo</div>
+    <div class="r-div"></div>
+    <div class="r-thanks">Obrigado pela preferência!</div>
+    <div class="r-safe"></div></div>`;
+  reciboHtmlAtual=html;return html;};
+(function(){const _ir=imprimirRecibo;
+  window.imprimirRecibo=function(u){let s=document.getElementById('lvPageRecibo');if(!s){s=document.createElement('style');s.id='lvPageRecibo';document.head.appendChild(s);}
+    s.textContent='@page{size:80mm auto;margin:0}';_ir(u);};
+  window.addEventListener('afterprint',()=>{const s=document.getElementById('lvPageRecibo');if(s)s.remove();});})();
+
+/* ---------- 5) DASHBOARD ---------- */
+const LV_AND=['Recebido','Em análise','Aguardando aprovação','Em reparo','Teste final'];
+let lvDash=null;
+function lvFat(D,pred){const it=[];
+  D.vendas.forEach(v=>{const d=lvD(v.data);if(pred(d))it.push({k:'Venda',num:v.numero,cli:v.clienteNome,d,val:Number(v.total)||0,desc:v.itemName||'-'});});
+  D.os.forEach(o=>{if(o.status!=='Concluída'||!o.dataSaida)return;const d=lvD(o.dataSaida);if(pred(d))it.push({k:'OS',id:o.id,num:o.numero,cli:o.clienteNome,d,val:Number(o.valor)||0,desc:o.peca||o.aparelho||'-'});});
+  return it.sort((a,b)=>(b.d||0)-(a.d||0));}
+const lvMesPred=(y,m)=>d=>!!d&&d.getFullYear()===y&&d.getMonth()===m;
+const lvBRL=v=>fmt(v);
+function lvCard(cls,ic,l,v,sub,key){return `<div class="stat-card ${cls} ${key?'click':''}" ${key?`onclick="lvDetalhe('${key}')"`:''}><span class="stat-icon">${ic}</span><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-sub">${sub||''}</div></div>`;}
+window.renderDashboard=async function(){
+  const D={vendas:await dbGetAll('vendas'),os:await dbGetAll('os'),orc:await dbGetAll('orcamentos'),est:await dbGetAll('estoque')};
+  const p=dashboardPeriod,inP=d=>p==='all'||(!!d&&lvIn(p,d));const E=lvEsc;
+  const fat=lvFat(D,inP),fV=fat.filter(x=>x.k==='Venda'),fO=fat.filter(x=>x.k==='OS'),tot=lvSum(fat);
+  const osP=D.os.filter(o=>inP(lvD(o.dataEntrada||o.data))),orcP=D.orc.filter(o=>inP(lvD(o.data)));
+  const so=s=>lvSum(orcP.filter(o=>o.status===s));
+  const n=new Date(),cur=lvSum(lvFat(D,lvMesPred(n.getFullYear(),n.getMonth())));const pm=new Date(n.getFullYear(),n.getMonth()-1,1);
+  const prev=lvSum(lvFat(D,lvMesPred(pm.getFullYear(),pm.getMonth())));
+  const varp=prev>0?((cur-prev)/prev*100):null;
+  const ab=D.os.filter(o=>o.status!=='Concluída'),and=ab.filter(o=>LV_AND.includes(o.status)),ap=ab.filter(o=>o.status==='Aguardando peça'),pr=ab.filter(o=>o.status==='Pronto para retirada');
+  const conc=D.os.filter(o=>o.status==='Concluída'&&inP(lvD(o.dataSaida)));
+  const aten=ab.map(o=>({o,dias:Math.floor((Date.now()-(lvD(o.data)||new Date()))/864e5)})).filter(x=>x.dias>=7).sort((a,b)=>b.dias-a.dias);
+  const cm={};osP.forEach(o=>{const k='c'+o.clienteId;(cm[k]=cm[k]||{nome:o.clienteNome,n:0,val:0}).n++;});
+  D.vendas.filter(v=>inP(lvD(v.data))).forEach(v=>{if(v.clienteId==null)return;const k='c'+v.clienteId;(cm[k]=cm[k]||{nome:v.clienteNome,n:0,val:0}).n++;});
+  const clis=Object.values(cm).sort((a,b)=>b.n-a.n);
+  lvDash={D,p,fat,fV,fO,osP,orcP,ab,and,ap,pr,conc,aten:aten.map(x=>x.o),prev,cur};
+  const PL={today:'hoje',week:'últimos 7 dias',month:'este mês',year:'este ano',all:'total'}[p];
+  document.getElementById('statsGrid').innerHTML=
+    lvCard('success','💵','Faturamento ('+PL+')',lvBRL(tot),`Vendas ${lvBRL(lvSum(fV))} + serviços (OS concluídas) ${lvBRL(lvSum(fO))}<br>Clique para ver o que compõe`,'fat')+
+    lvCard('primary','🛒','Vendas registradas',lvBRL(lvSum(fV)),fV.length+' venda(s) · recebido no ato do registro','vendas')+
+    lvCard('primary','🔧','Serviços concluídos (OS)',lvBRL(lvSum(fO)),fO.length+' OS concluída(s) no período (data de saída)','servicos')+
+    lvCard('neutral','🧾','Valor total das OS abertas no período',lvBRL(lvSum(osP)),osP.length+' OS com entrada no período (todas as situações) — valor orçado/lançado na OS','totos')+
+    lvCard('neutral','🎯','Ticket médio por OS',fO.length?lvBRL(lvSum(fO)/fO.length):'—',fO.length?'Valor das OS concluídas ÷ quantidade':'Sem OS concluídas no período','servicos')+
+    lvCard(varp===null?'neutral':varp>=0?'success':'danger','📊','Mês atual vs. mês anterior',varp===null?'—':(varp>=0?'▲ ':'▼ ')+Math.abs(varp).toFixed(1).replace('.',',')+'%',`${LV_MESES[n.getMonth()]}: ${lvBRL(cur)} · ${LV_MESES[pm.getMonth()]}: ${lvBRL(prev)}${varp===null?'<br>Sem faturamento no mês anterior para comparar':''}`,'mes:'+n.getFullYear()+'-'+n.getMonth())+
+    lvCard('warning','💰','Orçamentos no período',lvBRL(so('Pendente')+so('Aprovado')+so('Reprovado')),`Pendentes ${lvBRL(so('Pendente'))} · Aprovados ${lvBRL(so('Aprovado'))} · Reprovados ${lvBRL(so('Reprovado'))}<br>Orçado não é faturamento`,'orc')+
+    lvCard('neutral','ℹ️','Recebido / pendente das OS','Não registrado','O sistema não grava pagamento das OS; por isso esses valores não são calculados (só o recebido das vendas é conhecido).');
+  document.getElementById('dashOps').innerHTML=
+    lvCard('primary','🔧','OS abertas',ab.length,'Tudo que não está concluído','ab')+
+    lvCard('warning','🛠️','Em andamento',and.length,'Recebido, análise, aprovação, reparo, teste','and')+
+    lvCard('warning','⏳','Aguardando peça',ap.length,'','ap')+
+    lvCard('success','📦','Aguardando retirada',pr.length,'Pronto para retirada','pr')+
+    lvCard('success','✅','Concluídas / entregues',conc.length,'No período (concluída = saída registrada)','conc')+
+    lvCard(aten.length?'danger':'neutral','🚨','Precisam de atenção',aten.length,'Abertas há 7 dias ou mais','aten');
+  /* gráfico 12 meses */
+  const ms=[];for(let i=11;i>=0;i--){const d=new Date(n.getFullYear(),n.getMonth()-i,1),it=lvFat(D,lvMesPred(d.getFullYear(),d.getMonth()));
+    ms.push({y:d.getFullYear(),m:d.getMonth(),v:lvSum(it.filter(x=>x.k==='Venda')),s:lvSum(it.filter(x=>x.k==='OS'))});}
+  const mx=Math.max(1,...ms.map(x=>x.v+x.s));
+  document.getElementById('dashChart').innerHTML=(ms.some(x=>x.v+x.s>0)?`<div class="dash-chart">${ms.map(x=>`<div class="dash-col" title="${LV_MESES[x.m]}/${x.y}: ${lvBRL(x.v+x.s)}" onclick="lvDetalhe('mes:${x.y}-${x.m}')"><em>${x.v+x.s>0?Math.round(x.v+x.s):''}</em><div class="dash-bar" style="height:${(x.v+x.s)/mx*150}px"><i style="background:var(--primary);flex:${x.s}"></i><i style="background:var(--success);flex:${x.v}"></i></div><small>${LV_MESES[x.m].slice(0,3)}/${String(x.y).slice(2)}</small></div>`).join('')}</div>
+    <div class="stat-sub" style="margin-top:10px"><span style="color:var(--success)">■</span> Vendas &nbsp; <span style="color:var(--primary)">■</span> Serviços (OS concluídas) · valores em R$ · clique numa barra para detalhar</div>`:'<div class="lv-empty">Sem faturamento registrado nos últimos 12 meses.</div>');
+  /* serviços */
+  const sv={};conc.forEach(o=>{const k=lvNz(o.peca||'não informado').trim()||'não informado';(sv[k]=sv[k]||{nome:o.peca||'Não informado',n:0,val:0}).n++;sv[k].val+=Number(o.valor)||0;});
+  const top=Object.values(sv).sort((a,b)=>b.n-a.n).slice(0,8),mxs=top[0]?top[0].n:1;
+  document.getElementById('dashServ').innerHTML=top.length?top.map(x=>`<div class="hbar"><div class="t"><span>${E(formatText(x.nome))}</span><span>${x.n}× · ${lvBRL(x.val)}</span></div><div class="b"><i style="width:${x.n/mxs*100}%"></i></div></div>`).join('')+'<div class="stat-sub">OS concluídas no período, agrupadas pelo campo Peça/Serviço</div>':'<div class="lv-empty">Nenhuma OS concluída no período.</div>';
+  document.getElementById('dashAttn').innerHTML=aten.length?aten.slice(0,8).map(x=>`<div class="lv-row" onclick="lvOsPanel(${x.o.id})"><span><strong>${lvNum(x.o.numero)}</strong> ${E(formatText(x.o.clienteNome))}<br><small>${E(x.o.aparelho||'')} · ${E(x.o.status)}</small></span><span><small>há ${x.dias} dias</small></span></div>`).join('')+(aten.length>8?'<div class="stat-sub">Clique no card "Precisam de atenção" para ver todas</div>':''):'<div class="lv-empty">Nenhuma OS aberta há 7 dias ou mais. 👍</div>';
+  document.getElementById('dashCliTitle').textContent='👥 Clientes atendidos ('+clis.length+')';
+  document.getElementById('dashCli').innerHTML=clis.length?clis.slice(0,8).map(x=>`<div class="lv-row" style="cursor:default"><span>${E(formatText(x.nome))}</span><span><small>${x.n} atendimento(s)</small></span></div>`).join('')+'<div class="stat-sub">OS com entrada + vendas no período, por cadastro de cliente</div>':'<div class="lv-empty">Nenhum cliente atendido no período.</div>';
+  const low=D.est.filter(i=>i.qtd<=i.min);
+  document.getElementById('lowStockTable').innerHTML=`<tr><th>Item</th><th>Qtd</th><th>Mín</th><th>Status</th></tr>`+(low.length?low.map(i=>`<tr><td>${E(formatText(i.item))}</td><td>${i.qtd}</td><td>${i.min}</td><td><span class="badge badge-low">⚠</span></td></tr>`).join(''):'<tr><td colspan="4" class="empty-row">Tudo OK! 👍</td></tr>');
+  const ev=[];
+  D.os.forEach(o=>{const h=Array.isArray(o.historico)?o.historico:[];
+    if(!h.some(e=>e.tipo==='criada'))ev.push({d:lvD(o.data),t:'OS criada',n:o.numero,c:o.clienteNome,x:o.aparelho||'',id:o.id});
+    h.forEach(e=>ev.push({d:new Date(e.ts),t:LV_TIPOS[e.tipo]||e.tipo,n:o.numero,c:o.clienteNome,x:e.texto,id:o.id}));
+    if(o.dataSaida&&!h.some(e=>e.tipo==='garantia'||(e.tipo==='status'&&/Concluída$/.test(e.texto||''))))ev.push({d:lvD(o.dataSaida),t:'OS concluída',n:o.numero,c:o.clienteNome,x:'',id:o.id});});
+  D.vendas.forEach(v=>ev.push({d:lvD(v.data),t:'Venda',n:v.numero,c:v.clienteNome,x:v.itemName||''}));
+  D.orc.forEach(o=>ev.push({d:lvD(o.data),t:'Orçamento ('+o.status+')',n:o.numero,c:o.clienteNome,x:o.aparelho||''}));
+  const rec=ev.sort((a,b)=>(b.d||0)-(a.d||0)).slice(0,12);
+  document.getElementById('recentTable').innerHTML=`<tr><th>Quando</th><th>Evento</th><th>Nº</th><th>Cliente</th></tr>`+(rec.length?rec.map(r=>`<tr ${r.id?`style="cursor:pointer" onclick="lvOsPanel(${r.id})"`:''}><td><small>${lvFmtD(r.d)}</small></td><td><span class="badge badge-info">${E(r.t)}</span><br><small style="color:var(--text-dim)">${E(String(r.x||'').slice(0,50))}</small></td><td>${lvNum(r.n)}</td><td>${E(formatText(r.c))}</td></tr>`).join(''):'<tr><td colspan="4" class="empty-row">Sem movimentações</td></tr>');
+};
+function lvDetalhe(key){const L=lvDash;if(!L)return;const E=lvEsc;let t='',h='';
+  const osRows=a=>a.length?a.map(o=>`<div class="lv-row" onclick="lvClose('dashModal');lvOsPanel(${o.id})"><span><strong>${lvNum(o.numero)}</strong> ${E(formatText(o.clienteNome))}<br><small>${E(o.aparelho||'')} · ${E(o.peca||'')} · ${E(o.status)} · ${E(o.dataEntrada||o.data||'')}</small></span><span>${fmt(o.valor)}</span></div>`).join(''):'<div class="lv-empty">Nenhum registro.</div>';
+  const fatRows=a=>(a.length?a.map(x=>`<div class="lv-row" ${x.id?`onclick="lvClose('dashModal');lvOsPanel(${x.id})"`:'style="cursor:default"'}><span><span class="badge ${x.k==='OS'?'badge-info':'badge-approved'}">${x.k}</span> <strong>${lvNum(x.num)}</strong> ${E(formatText(x.cli))}<br><small>${E(x.desc)} · ${lvFmtD(x.d,false)}</small></span><span>${fmt(x.val)}</span></div>`).join(''):'<div class="lv-empty">Nenhum registro.</div>')+`<div class="lv-row" style="cursor:default"><strong>Total (${a.length})</strong><strong>${fmt(lvSum(a))}</strong></div>`;
+  if(key==='fat'){t='Faturamento — o que compõe o total';h=fatRows(L.fat)+'<div class="stat-sub">Vendas (data da venda) + OS concluídas (data de saída). Cada registro é contado uma única vez.</div>';}
+  else if(key==='vendas'){t='Vendas do período';h=fatRows(L.fV);}
+  else if(key==='servicos'){t='OS concluídas no período';h=fatRows(L.fO);}
+  else if(key==='totos'){t='OS com entrada no período';h=osRows(L.osP);}
+  else if(key==='orc'){t='Orçamentos do período (orçado, não faturado)';h=L.orcP.length?L.orcP.map(o=>`<div class="lv-row" style="cursor:default"><span><strong>${lvNum(o.numero)}</strong> ${E(formatText(o.clienteNome))}<br><small>${E(o.aparelho||'')} · ${E(o.status)}</small></span><span>${fmt(o.valor)}</span></div>`).join(''):'<div class="lv-empty">Nenhum orçamento.</div>';}
+  else if(key.startsWith('mes:')){const [y,m]=key.slice(4).split('-').map(Number);const it=lvFat(L.D,lvMesPred(y,m));t=`Faturamento de ${LV_MESES[m]}/${y}`;h=fatRows(it);}
+  else{const map={ab:['OS abertas',L.ab],and:['OS em andamento',L.and],ap:['OS aguardando peça',L.ap],pr:['Aguardando retirada',L.pr],conc:['OS concluídas no período',L.conc],aten:['OS que precisam de atenção (abertas há 7+ dias)',L.aten]};t=map[key][0];h=osRows(map[key][1]);}
+  document.getElementById('dashModalTitle').textContent=t;document.getElementById('dashModalBody').innerHTML=h;lvOpen('dashModal');}
+setTimeout(()=>{if(document.getElementById('gPastaStatus'))lvGarStatus();},800);
+</script>
+<style>
+.pdv-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:20px}
+@media(max-width:900px){.pdv-grid{grid-template-columns:1fr}}
+.pdv-in{width:90px;padding:6px 8px;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px}
+.pdv-q{width:56px;text-align:center}
+.pdv-res.sel{background:var(--bg-3);outline:1px solid var(--primary)}
+.pdv-zero{color:var(--danger)}
+.pdv-box{background:var(--bg-3);border-radius:10px;padding:14px;margin-bottom:12px}
+.pdv-total{font-size:34px;font-weight:700;color:var(--success)}
+.pdv-big{width:100%;padding:14px;font-size:16px;justify-content:center}
+.pdv-line{display:flex;justify-content:space-between;font-size:14px;margin:6px 0}
+</style>
+<div class="modal-bg" id="pdvOk"><div class="modal" style="max-width:440px"><div id="pdvOkBody"></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="pdvNova()">Nova venda</button><button class="btn btn-primary" id="pdvBtnPrint" onclick="pdvImprimir()">🖨️ Imprimir comprovante</button></div></div></div>
+<script>
+/* =====================================================================
+   v5.0 - PDV na seção Vendas. Só adiciona/envolve funções de Vendas.
+   Cada venda continua sendo UM registro em "vendas" (mesmos campos de
+   antes) + campos opcionais: itens, subtotal, recebido, troco, pdv.
+   ===================================================================== */
+let pdvCart=[],pdvProds=[],pdvSel=0,pdvCodes={},pdvLast=null,pdvPend=null,pdvBusy=false;
+const pdvTit=s=>String(s||'').toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase());
+const r2=x=>Math.round((Number(x)||0)*100)/100;
+const pdvEl=id=>document.getElementById(id);
+async function pdvInit(){
+  const keep=pdvEl('pdvCliente').value;pdvProds=await dbGetAll('estoque');pdvCodes=(await getConfig('pdv_barcodes',{}))||{};
+  const cs=await dbGetAll('clientes');
+  pdvEl('pdvCliente').innerHTML='<option value="">Consumidor (sem cadastro)</option>'+cs.map(c=>`<option value="${c.id}">${lvEsc(formatText(c.nome))}</option>`).join('');
+  pdvEl('pdvCliente').value=keep;pdvRender();pdvBusca();}
+function pdvAchaCodigo(q){const id=pdvCodes[q];if(id!=null){const p=pdvProds.find(x=>x.id===id);if(p)return p;}
+  return pdvProds.find(p=>[p.codigo,p.barras,p.ean,p.sku].some(c=>c&&String(c).trim()===q))||null;}
+function pdvFiltra(q){const n=lvNz(q).trim();if(!n)return[];const ws=n.split(/\s+/);return pdvProds.filter(p=>ws.every(w=>lvNz(p.item).includes(w))).slice(0,8);}
+function pdvBusca(){const q=pdvEl('pdvBusca').value,r=pdvFiltra(q),E=lvEsc;pdvSel=Math.min(pdvSel,Math.max(0,r.length-1));
+  pdvEl('pdvRes').innerHTML=!q.trim()?'<div class="lv-empty">Digite o nome ou leia o código de barras. Enter adiciona o item destacado.</div>':
+    r.length?r.map((p,i)=>`<div class="lv-row pdv-res ${i===pdvSel?'sel':''}" onclick="pdvAdd(${p.id})"><span><strong>${E(pdvTit(p.item))}</strong><br><small>${E(p.tipo||'')}</small></span><span style="text-align:right">${fmt(p.venda)}<br><small class="${p.qtd>0?'':'pdv-zero'}">${p.qtd>0?'Estoque: '+p.qtd:'Sem estoque'}</small></span></div>`).join(''):'<div class="lv-empty">Nenhum produto encontrado.</div>';}
+function pdvKey(e){const q=e.target.value.trim(),r=pdvFiltra(q);
+  if(e.key==='ArrowDown'){e.preventDefault();pdvSel=Math.min(pdvSel+1,r.length-1);pdvBusca();}
+  else if(e.key==='ArrowUp'){e.preventDefault();pdvSel=Math.max(0,pdvSel-1);pdvBusca();}
+  else if(e.key==='Escape'){e.target.value='';pdvSel=0;pdvBusca();}
+  else if(e.key==='Enter'){e.preventDefault();if(!q)return;const c=pdvAchaCodigo(q);if(c){pdvAdd(c.id);return;}
+    if(r.length&&!/^\d{6,}$/.test(q)){pdvAdd(r[pdvSel].id);return;}
+    if(/^\d{4,}$/.test(q)){pdvPedirVinculo(q);return;}toast('Produto não encontrado',true);}}
+function pdvPedirVinculo(code){pdvPend=code;const b=pdvEl('pdvLink');
+  b.innerHTML=`<strong>Código ${lvEsc(code)} ainda não vinculado a um produto.</strong><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><select id="pdvLinkSel" style="flex:1;min-width:160px;padding:8px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:6px">${pdvProds.map(p=>`<option value="${p.id}">${lvEsc(pdvTit(p.item))} (${fmt(p.venda)})</option>`).join('')}</select><button class="btn btn-primary btn-sm" onclick="pdvVincular()">Vincular e adicionar</button><button class="btn btn-secondary btn-sm" onclick="pdvEl('pdvLink').style.display='none';pdvEl('pdvBusca').focus()">Cancelar</button></div><small style="color:var(--text-dim)">Só na primeira leitura deste código; depois ele adiciona o produto direto.</small>`;
+  b.style.display='block';}
+async function pdvVincular(){const id=Number(pdvEl('pdvLinkSel').value);if(!pdvPend||!id)return;pdvCodes[pdvPend]=id;await setConfig('pdv_barcodes',pdvCodes);pdvEl('pdvLink').style.display='none';pdvPend=null;pdvAdd(id);}
+function pdvAdd(id){const p=pdvProds.find(x=>x.id===id);if(!p)return;
+  if(p.qtd<=0)return toast('Sem estoque: '+formatText(p.item),true);
+  const l=pdvCart.find(x=>x.itemId===id);
+  if(l){if(l.qtd+1>p.qtd)return toast('Estoque disponível: '+p.qtd,true);l.qtd++;}else pdvCart.push({itemId:id,nome:p.item,preco:Number(p.venda)||0,qtd:1,max:p.qtd});
+  pdvEl('pdvBusca').value='';pdvSel=0;pdvBusca();pdvRender();pdvEl('pdvBusca').focus();}
+function pdvAvulso(){const d=pdvEl('pdvAvDesc').value.trim(),p=Number(pdvEl('pdvAvPreco').value);if(!d||!(p>0))return toast('Informe descrição e preço',true);
+  pdvCart.push({itemId:null,nome:d,preco:r2(p),qtd:1,max:null});pdvEl('pdvAvDesc').value='';pdvEl('pdvAvPreco').value='';pdvRender();pdvEl('pdvBusca').focus();}
+function pdvQtd(i,v){const l=pdvCart[i];v=Math.floor(Number(v));if(!(v>=1)){pdvCart.splice(i,1);return pdvRender();}
+  if(l.max!=null&&v>l.max){toast('Estoque disponível: '+l.max,true);v=l.max;}l.qtd=v;pdvRender();}
+function pdvPreco(i,v){pdvCart[i].preco=r2(Math.max(0,Number(v)));pdvRender();}
+function pdvDel(i){pdvCart.splice(i,1);pdvRender();}
+function pdvLimpar(){pdvCart=[];pdvEl('pdvDesc').value='0';pdvEl('pdvRec').value='';pdvRender();pdvEl('pdvBusca').focus();}
+function pdvRender(){pdvEl('pdvCart').innerHTML='<tr><th>Item</th><th>Preço</th><th>Qtd</th><th>Subtotal</th><th></th></tr>'+(pdvCart.length?pdvCart.map((l,i)=>`<tr><td>${lvEsc(pdvTit(l.nome))}${l.max!=null?`<br><small style="color:var(--text-dim)">estoque ${l.max}</small>`:''}</td><td><input class="pdv-in" type="number" step="0.01" min="0" value="${l.preco}" onchange="pdvPreco(${i},this.value)"></td><td style="white-space:nowrap"><button class="btn btn-sm btn-secondary" onclick="pdvQtd(${i},${l.qtd-1})">−</button> <input class="pdv-in pdv-q" type="number" min="1" value="${l.qtd}" onchange="pdvQtd(${i},this.value)"> <button class="btn btn-sm btn-secondary" onclick="pdvQtd(${i},${l.qtd+1})">+</button></td><td>${fmt(r2(l.preco*l.qtd))}</td><td><button class="btn btn-sm btn-danger" onclick="pdvDel(${i})">✕</button></td></tr>`).join(''):'<tr><td colspan="5" class="empty-row">Carrinho vazio</td></tr>');pdvTotais();}
+function pdvCalc(){const sub=r2(pdvCart.reduce((s,l)=>s+l.preco*l.qtd,0)),desc=r2(Math.min(Math.max(0,Number(pdvEl('pdvDesc').value)||0),sub)),total=r2(sub-desc);
+  const forma=pdvEl('pdvForma').value,rv=pdvEl('pdvRec').value,rec=forma==='Dinheiro'?(rv===''?total:r2(rv)):total;return{sub,desc,total,forma,rec,troco:r2(rec-total)};}
+function pdvTotais(){const c=pdvCalc();pdvEl('pdvSub').textContent=fmt(c.sub);pdvEl('pdvTotal').textContent=fmt(c.total);
+  pdvEl('pdvDinheiro').style.display=c.forma==='Dinheiro'?'block':'none';
+  const falta=c.troco<0;pdvEl('pdvTrocoL').textContent=falta?'Faltam':'Troco';pdvEl('pdvTroco').textContent=fmt(Math.abs(c.troco));pdvEl('pdvTroco').style.color=falta?'var(--danger)':'var(--success)';
+  pdvEl('pdvFin').disabled=!pdvCart.length||falta;}
+async function pdvFinalizar(){
+  if(pdvBusy||!pdvCart.length)return;const c=pdvCalc();if(c.troco<0)return toast('Valor recebido menor que o total',true);
+  pdvBusy=true;try{
+    for(const l of pdvCart)if(l.itemId!=null){const p=await dbGet('estoque',l.itemId);
+      if(!p)throw new Error(`"${l.nome}" não existe mais no estoque`);if(p.qtd<l.qtd)throw new Error(`Estoque insuficiente de "${p.item}" (disponível: ${p.qtd})`);}
+    const cid=pdvEl('pdvCliente').value,cli=cid?await dbGet('clientes',Number(cid)):null;
+    const un=pdvCart.reduce((s,l)=>s+l.qtd,0),num=await getNextCounter('venda');
+    const v={numero:num,clienteId:cli?cli.id:null,clienteNome:cli?cli.nome:'Consumidor',itemId:pdvCart.length===1?pdvCart[0].itemId:null,
+      itemName:pdvCart.map(l=>l.nome+(l.qtd>1?' x'+l.qtd:'')).join(', ').slice(0,140),qtd:un,preco:r2(c.sub/un),desc:c.desc,total:c.total,pag:c.forma,obs:'',data:now(),
+      itens:pdvCart.map(l=>({itemId:l.itemId,nome:l.nome,qtd:l.qtd,preco:l.preco,subtotal:r2(l.preco*l.qtd)})),subtotal:c.sub,recebido:c.rec,troco:Math.max(0,c.troco),pdv:true};
+    v.id=await dbAdd('vendas',v);
+    for(const l of pdvCart)if(l.itemId!=null){const p=await dbGet('estoque',l.itemId);p.qtd=Math.max(0,p.qtd-l.qtd);await dbUpdate('estoque',p);}
+    pdvLast=v;pdvCart=[];pdvEl('pdvDesc').value='0';pdvEl('pdvRec').value='';
+    await renderVendas();await fillSelects();await pdvInit();
+    pdvEl('pdvOkBody').innerHTML=`<h3>✅ Venda ${lvNum(v.numero)} finalizada</h3><div class="pdv-box"><div class="pdv-line"><span>Total</span><strong>${fmt(v.total)}</strong></div><div class="pdv-line"><span>Pagamento</span><span>${lvEsc(v.pag)}</span></div>${v.pag==='Dinheiro'?`<div class="pdv-line"><span>Recebido</span><span>${fmt(v.recebido)}</span></div><div class="pdv-line"><span>Troco</span><strong style="color:var(--success)">${fmt(v.troco)}</strong></div>`:''}</div><small style="color:var(--text-dim)">Comprovante não fiscal.</small>`;
+    lvOpen('pdvOk');pdvEl('pdvBtnPrint').focus();
+  }catch(err){console.error(err);toast('Venda NÃO registrada: '+err.message,true);}finally{pdvBusy=false;}}
+function pdvNova(){lvClose('pdvOk');pdvEl('pdvBusca').focus();}
+async function pdvComprovante(v){const cfg=await getStoreConfig(),E=lvEsc;
+  const itens=Array.isArray(v.itens)&&v.itens.length?v.itens:[{nome:v.itemName,qtd:v.qtd,preco:v.preco,subtotal:r2(v.preco*v.qtd)}];
+  const row=(a,b)=>`<div class="r-row"><span class="r-desc">${a}</span><span class="r-price">${b}</span></div>`;
+  return `<div class="recibo-sheet">
+    <div class="r-nome">${E(cfg.nome||RECIBO_LOJA.nome)}</div>
+    <div class="r-small">${cfg.doc?'Doc.: '+E(cfg.doc):'CNPJ: '+E(RECIBO_LOJA.cnpj)}</div>
+    <div class="r-small">${E(cfg.endereco||RECIBO_LOJA.endereco)}</div>${cfg.tel?`<div class="r-small">Tel.: ${E(cfg.tel)}</div>`:''}
+    <div class="r-div"></div><div class="r-title">COMPROVANTE DE VENDA</div>
+    <div class="r-small" style="margin-top:1mm">*** NÃO É DOCUMENTO FISCAL ***</div>
+    <div class="r-small" style="margin-top:1mm">Venda ${lvNum(v.numero)} &nbsp;•&nbsp; ${E(String(v.data||'').replace(',',' às'))}</div>
+    ${v.clienteId!=null?`<div class="r-small">Cliente: ${E(formatText(v.clienteNome))}</div>`:''}
+    <div class="r-div"></div>
+    ${itens.map(i=>row(`${i.qtd}x ${E(pdvTit(i.nome))}`,fmt(i.subtotal))+`<div class="r-small" style="text-align:left;margin-bottom:1mm">${i.qtd} × ${fmt(i.preco)}</div>`).join('')}
+    <div class="r-div"></div>
+    ${v.desc>0?row('Subtotal',fmt(v.subtotal!=null?v.subtotal:v.total+v.desc))+row('Desconto','- '+fmt(v.desc)):''}
+    <div class="r-total"><span>TOTAL</span><span>${fmt(v.total)}</span></div>
+    <div style="margin-top:2mm">${row('Pagamento',E(v.pag||'-'))}${v.pag==='Dinheiro'&&v.recebido!=null?row('Valor recebido',fmt(v.recebido))+row('Troco',fmt(v.troco||0)):''}</div>
+    <div class="r-div"></div><div class="r-thanks">Obrigado pela preferência!</div><div class="r-safe"></div></div>`;}
+async function pdvImprimirVenda(v){document.getElementById('receiptPrintArea').innerHTML=await pdvComprovante(v);
+  let s=document.getElementById('lvPageRecibo');if(!s){s=document.createElement('style');s.id='lvPageRecibo';document.head.appendChild(s);}
+  s.textContent='@page{size:80mm auto;margin:0}';document.body.classList.add('printing-receipt');
+  try{window.print();}finally{setTimeout(fimImpressaoRecibo,1500);}}
+const pdvImprimir=()=>pdvLast&&pdvImprimirVenda(pdvLast);
+async function pdvReimprimir(id){const v=await dbGet('vendas',id);if(v)pdvImprimirVenda(v);}
+(function(){
+  const _ss=showSection;window.showSection=function(id,el){_ss(id,el);if(id==='vendas')pdvInit().then(()=>pdvEl('pdvBusca').focus());};
+  const _rv=renderVendas;window.renderVendas=async function(s){await _rv(s);
+    document.querySelectorAll('#vendasTable tr').forEach(tr=>{const w=tr.querySelector('button[onclick^="whatsappVenda("]');if(!w||tr.querySelector('.pdv-rp'))return;
+      const id=+w.getAttribute('onclick').match(/\((\d+)\)/)[1];
+      w.insertAdjacentHTML('beforebegin',`<button class="btn btn-sm btn-primary pdv-rp" title="Comprovante térmico (não fiscal)" onclick="pdvReimprimir(${id})">🧾</button> `);
+      const pb=tr.querySelector('button[onclick^="printVenda("]');if(pb&&!/\p{Extended_Pictographic}/u.test(pb.textContent))pb.textContent='🖨️';});};
+  const _wv=whatsappVenda;window.whatsappVenda=async function(id){const v=await dbGet('vendas',id);if(!v||v.clienteId==null)return toast('Venda sem cliente cadastrado: não há telefone para o WhatsApp',true);return _wv(id);};
+  document.addEventListener('keydown',e=>{const s=document.getElementById('vendas');if(!s||!s.classList.contains('active'))return;
+    if(e.key==='F2'){e.preventDefault();pdvEl('pdvBusca').focus();}else if(e.key==='F9'){e.preventDefault();pdvFinalizar();}});
+  const _rd=renderDashboard;window.renderDashboard=async function(){await _rd();pdvDashboard();};
+})();
+function pdvDashboard(){const L=lvDash;if(!L||!pdvEl('dashPag'))return;const E=lvEsc;
+  const vs=L.D.vendas.filter(v=>L.p==='all'||lvIn(L.p,lvD(v.data))),tot=vs.reduce((s,v)=>s+(Number(v.total)||0),0);
+  const pg={};vs.forEach(v=>{const k=v.pag||'Outro';(pg[k]=pg[k]||{n:0,val:0}).n++;pg[k].val+=Number(v.total)||0;});
+  const a=Object.entries(pg).sort((x,y)=>y[1].val-x[1].val),mx=a[0]?a[0][1].val:1;
+  pdvEl('dashPag').innerHTML=a.length?a.map(([k,x])=>`<div class="hbar"><div class="t"><span>${E(k)}</span><span>${x.n}× · ${fmt(x.val)} (${tot?Math.round(x.val/tot*100):0}%)</span></div><div class="b"><i style="width:${mx?x.val/mx*100:0}%"></i></div></div>`).join('')+`<div class="stat-sub">${vs.length} venda(s) · ticket médio ${fmt(tot/vs.length)}</div>`:'<div class="lv-empty">Nenhuma venda no período.</div>';
+  const pr={};vs.forEach(v=>(Array.isArray(v.itens)&&v.itens.length?v.itens:[{nome:v.itemName,qtd:v.qtd,subtotal:v.total}]).forEach(i=>{if(!i.nome||i.nome==='-')return;const k=lvNz(i.nome);(pr[k]=pr[k]||{nome:i.nome,qtd:0,val:0});pr[k].qtd+=Number(i.qtd)||0;pr[k].val+=Number(i.subtotal)||0;}));
+  const t=Object.values(pr).sort((x,y)=>y.qtd-x.qtd).slice(0,8),m2=t[0]?t[0].qtd:1;
+  pdvEl('dashProd').innerHTML=t.length?t.map(x=>`<div class="hbar"><div class="t"><span>${E(pdvTit(x.nome))}</span><span>${x.qtd} un · ${fmt(x.val)}</span></div><div class="b"><i style="width:${x.qtd/m2*100}%"></i></div></div>`).join(''):'<div class="lv-empty">Nenhum produto vendido no período.</div>';}
+</script>
+<script>
+/* ===== CellOS v5 — melhorias: vários aparelhos por cliente, relatórios completos, WhatsApp ===== */
+const E5 = s => lvEsc(s);
+const cliDevs = c => Array.isArray(c.aparelhos) && c.aparelhos.length ? c.aparelhos
+  : (c.aparelho ? [{id:1, modelo:c.aparelho, imei:c.imei||'', obs:''}] : []);
+async function saveCliDevs(c, devs) {
+  c.aparelhos = devs; c.aparelho = devs[0] ? devs[0].modelo : ''; c.imei = devs[0] ? devs[0].imei : '';
+  await dbUpdate('clientes', c);   // campos legados espelham o 1º aparelho (garantia/impressão continuam funcionando)
+}
+const digits = s => String(s||'').replace(/\D/g,'');
+
+/* WhatsApp: abre em nova aba (web.whatsapp.com não pode ser incorporado em iframe) */
+openWhatsApp = function(number, message) {
+  const n = formatWhatsAppNumber(number||'');
+  if (!n) { toast('Telefone inválido ou ausente', true); return; }
+  window.open(`https://wa.me/${n}?text=${encodeURIComponent(message||'')}`, '_blank', 'noopener,noreferrer');
+};
+
+/* ---------- Clientes ---------- */
+let savingCli = false;
+saveCliente = async function() {
+  if (savingCli) return; const v = id => document.getElementById(id).value.trim();
+  const req = [['cNome','Nome'],['cTel','Telefone'],['cAparelho','Aparelho'],['cCpf','CPF'],['cCep','CEP'],['cRua','Rua'],['cBairro','Bairro'],['cCidade','Cidade']];
+  for (const [id,l] of req) if (!v(id)) return toast(l+' obrigatório', true);
+  if (digits(v('cTel')).length < 10) return toast('Telefone deve ter DDD + número', true);
+  const dup = (await dbGetAll('clientes')).find(c => digits(c.cpf) && digits(c.cpf) === digits(v('cCpf')));
+  if (dup) return toast('Já existe cliente com este CPF: '+dup.nome+'. Use 📱 para adicionar outro aparelho a ele.', true);
+  savingCli = true;
+  try {
+    await dbAdd('clientes', { nome:v('cNome'), tel:v('cTel'), aparelho:v('cAparelho'), cpf:v('cCpf'), cep:v('cCep'), rua:v('cRua'),
+      bairro:v('cBairro'), cidade:v('cCidade'), email:v('cEmail'), imei:v('cImei'), obs:v('cObs'), data:now(),
+      aparelhos:[{id:1, modelo:v('cAparelho'), imei:v('cImei'), obs:''}] });
+    clearForm('c'); await renderClientes(); await fillSelects(); toast('Cliente salvo!');
+  } finally { savingCli = false; }
+};
+renderClientes = async function(s='') {
+  const q = String(s).toLowerCase(), qd = digits(s);
+  const list = (await dbGetAll('clientes')).filter(c => !q || c.nome.toLowerCase().includes(q) || (qd && (digits(c.cpf).includes(qd) || digits(c.tel).includes(qd)))
+    || cliDevs(c).some(d => (d.modelo+' '+d.imei).toLowerCase().includes(q)));
+  document.getElementById('clientesTable').innerHTML = `<tr><th>Cliente</th><th>Contato</th><th>Endereço</th><th>Aparelhos</th><th>Ações</th></tr>` +
+  (list.length ? list.map(c => { const d = cliDevs(c); return `<tr>
+    <td><strong>${E5(formatText(c.nome))}</strong><br><small style="color:var(--text-dim)">${E5(c.cpf||'')}</small></td>
+    <td>${E5(c.tel||'-')}<br><small style="color:var(--text-dim)">${E5(c.email||'')}</small></td>
+    <td><small>${E5(c.rua||'')}, ${E5(c.bairro||'')}<br>${E5(c.cidade||'')} - CEP: ${E5(c.cep||'')}</small></td>
+    <td>${d.length ? d.map(x=>`📱 ${E5(x.modelo)}${x.imei?` <small style="color:var(--text-dim)">(${E5(x.imei)})</small>`:''}`).join('<br>') : '-'}</td>
+    <td style="white-space:nowrap"><button class="btn btn-sm btn-secondary" title="Aparelhos" onclick="devOpen(${c.id})">📱 ${d.length}</button>
+      <button class="btn btn-sm btn-whatsapp" title="WhatsApp" onclick="whatsappCliente(${c.id})">💬</button>
+      <button class="btn btn-sm btn-secondary" onclick="printCliente(${c.id})">🖨️</button>
+      <button class="btn btn-sm btn-danger" onclick="delCliente(${c.id})">🗑️</button></td></tr>`; }).join('')
+    : '<tr><td colspan="5" class="empty-row">Nenhum cliente encontrado</td></tr>');
+};
+let devCur = null, devEdit = -1;
+document.body.insertAdjacentHTML('beforeend', `<div class="modal-bg" id="devModal"><div class="modal" style="max-width:560px;width:95%">
+  <h3 id="devTitle">Aparelhos</h3><div id="devList"></div>
+  <div class="form-grid" style="margin-top:14px"><div class="form-group"><label id="devLbl">Novo aparelho *</label><input id="dvModelo" placeholder="Ex.: iPhone 13 128GB"></div>
+  <div class="form-group"><label>IMEI</label><input id="dvImei"></div><div class="form-group"><label>Observação</label><input id="dvObs"></div></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="document.getElementById('devModal').classList.remove('active')">Fechar</button>
+  <button class="btn btn-primary" onclick="devSave()">💾 Salvar aparelho</button></div></div></div>`);
+async function devOpen(id) { devCur = id; devEdit = -1; await devDraw(); document.getElementById('devModal').classList.add('active'); }
+async function devDraw() {
+  const c = await dbGet('clientes', devCur), d = cliDevs(c);
+  document.getElementById('devTitle').textContent = '📱 Aparelhos de ' + c.nome;
+  document.getElementById('devLbl').textContent = devEdit >= 0 ? 'Editando aparelho *' : 'Novo aparelho *';
+  document.getElementById('devList').innerHTML = d.length ? d.map((x,i)=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+    <span><strong>${E5(x.modelo)}</strong><br><small style="color:var(--text-dim)">${x.imei?'IMEI '+E5(x.imei):'sem IMEI'}${x.obs?' · '+E5(x.obs):''}</small></span>
+    <span style="white-space:nowrap"><button class="btn btn-sm btn-secondary" onclick="devStartEdit(${i})">✏️</button> <button class="btn btn-sm btn-danger" onclick="devDel(${i})">🗑️</button></span></div>`).join('')
+    : '<p class="empty-row">Nenhum aparelho cadastrado</p>';
+}
+async function devStartEdit(i) { const d = cliDevs(await dbGet('clientes', devCur))[i]; devEdit = i;
+  dvModelo.value = d.modelo; dvImei.value = d.imei||''; dvObs.value = d.obs||''; await devDraw(); }
+async function devSave() {
+  const modelo = dvModelo.value.trim(); if (!modelo) return toast('Informe o aparelho', true);
+  const c = await dbGet('clientes', devCur), d = cliDevs(c).map(x=>({...x})), imei = dvImei.value.trim();
+  if (imei && d.some((x,i)=>i!==devEdit && x.imei===imei)) return toast('Este IMEI já está cadastrado para o cliente', true);
+  const item = {modelo, imei, obs:dvObs.value.trim()};
+  if (devEdit >= 0) d[devEdit] = {...d[devEdit], ...item}; else d.push({id:Date.now(), ...item});
+  await saveCliDevs(c, d); devEdit = -1; dvModelo.value = dvImei.value = dvObs.value = '';
+  await devDraw(); await renderClientes(); toast('Aparelho salvo!');
+}
+async function devDel(i) {
+  showModal('Remover aparelho', 'Remover este aparelho do cliente? Os demais dados são mantidos.', async () => {
+    const c = await dbGet('clientes', devCur), d = cliDevs(c).filter((_,k)=>k!==i);
+    await saveCliDevs(c, d); await renderClientes(); await devOpen(devCur); toast('Aparelho removido');
+  });
+}
+/* OS e orçamento: sugestão com todos os aparelhos do cliente */
+async function fillDevList(selId, inpId) {
+  const inp = document.getElementById(inpId), cid = document.getElementById(selId).value;
+  let dl = document.getElementById('dl_'+inpId); if (!dl) { dl = document.createElement('datalist'); dl.id = 'dl_'+inpId; document.body.appendChild(dl); inp.setAttribute('list', dl.id); }
+  if (!cid) { inp.value = ''; dl.innerHTML = ''; inp.placeholder = ''; return; }
+  const d = cliDevs(await dbGet('clientes', Number(cid)));
+  dl.innerHTML = d.map(x=>`<option value="${E5(x.modelo)}">${E5(x.imei||'')}</option>`).join('');
+  inp.value = d[0] ? d[0].modelo : ''; inp.placeholder = d.length > 1 ? `${d.length} aparelhos — clique para escolher` : '';
+  const im = document.getElementById(inpId === 'osAparelho' ? 'osImei' : 'oImei'); if (im && d[0]) im.value = d[0].imei||'';
+  inp.onchange = () => { const m = d.find(x=>x.modelo===inp.value); if (m && im) im.value = m.imei||''; };
+}
+autoFillOS = () => fillDevList('osCliente', 'osAparelho');
+document.getElementById('oCliente').addEventListener('change', () => fillDevList('oCliente', 'oAparelho'));
+
+/* ---------- Relatórios ---------- */
+let relRange = {from:'', to:''};
+const relIn = d => {
+  if (reportPeriod !== 'custom') return isDateInRange(d, reportPeriod);
+  const m = String(d||'').match(/(\d{2})\/(\d{2})\/(\d{4})/); if (!m) return false;
+  const t = new Date(+m[3], m[2]-1, +m[1]), f = relRange.from && new Date(relRange.from+'T00:00:00'), e = relRange.to && new Date(relRange.to+'T00:00:00');
+  return (!f || t >= f) && (!e || t <= e);
+};
+setReportPeriod = function(p, el) {
+  reportPeriod = p; document.querySelectorAll('#relatorios .period-btn').forEach(b => b.classList.remove('active')); if (el) el.classList.add('active'); renderRelatorios();
+};
+function relCustom() { relRange = {from:relDe.value, to:relAte.value}; if (!relDe.value && !relAte.value) return; reportPeriod = 'custom';
+  document.querySelectorAll('#relatorios .period-btn').forEach(b => b.classList.remove('active')); renderRelatorios(); }
+const hbars = (rows, fmtv) => rows.length ? rows.map(([k,v,extra]) => { const mx = rows[0][1] || 1;
+  return `<div class="hbar"><div class="t"><span>${E5(k)}</span><span>${fmtv(v)}${extra||''}</span></div><div class="b"><i style="width:${Math.max(2, v/mx*100)}%"></i></div></div>`; }).join('')
+  : '<p class="empty-row">Sem dados no período</p>';
+const sumBy = (arr, f) => arr.reduce((s,x) => s + (Number(f(x))||0), 0);
+renderRelatorios = async function() {
+  const host = document.getElementById('relStats');
+  if (!document.getElementById('relDe')) host.insertAdjacentHTML('beforebegin', `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+    <small>Período personalizado:</small><input type="date" id="relDe" onchange="relCustom()"><input type="date" id="relAte" onchange="relCustom()">
+    <button class="btn btn-sm btn-secondary" onclick="relCsv()">⬇️ Exportar vendas (CSV)</button></div>`);
+  const sel = {today:0,week:1,month:2,year:3,all:4}[reportPeriod];
+  if (sel !== undefined) document.querySelectorAll('#relatorios .period-btn').forEach((b,i) => b.classList.toggle('active', i === sel));
+  const [vAll, orcAll, osAll, est] = await Promise.all(['vendas','orcamentos','os','estoque'].map(dbGetAll));
+  const vendas = vAll.filter(v => relIn(v.data)), orc = orcAll.filter(o => relIn(o.data));
+  const osNovas = osAll.filter(o => relIn(o.data)), osConc = osAll.filter(o => o.status === 'Concluída' && relIn(o.dataSaida || o.data));
+  window._relVendas = vendas;
+  const fat = sumBy(vendas, v=>v.total), desc = sumBy(vendas, v=>v.desc), recOS = sumBy(osConc, o=>o.valor);
+  const custoMap = Object.fromEntries(est.map(i => [i.id, Number(i.custo)||0]));
+  const lines = vendas.flatMap(v => Array.isArray(v.itens) && v.itens.length ? v.itens : [{itemId:v.itemId, nome:v.itemName, qtd:v.qtd, subtotal:v.total}]);
+  let custo = 0, cobertos = 0, recCob = 0;
+  lines.forEach(l => { if (l.itemId != null && custoMap[l.itemId] > 0) { custo += custoMap[l.itemId]*(Number(l.qtd)||0); cobertos++; recCob += Number(l.subtotal)||0; } });
+  const card = (c,l,v,n='') => `<div class="stat-card ${c}"><div class="stat-label">${l}</div><div class="stat-value">${v}</div>${n?`<small style="color:var(--text-dim)">${n}</small>`:''}</div>`;
+  host.innerHTML = card('success','Faturamento (vendas)',fmt(fat)) + card('primary','Nº de vendas',vendas.length) + card('primary','Ticket médio',fmt(vendas.length?fat/vendas.length:0))
+    + card('warning','Descontos concedidos',fmt(desc)) + card('success','OS concluídas',osConc.length, fmt(recOS)) + card('success','Receita total (vendas + OS)',fmt(fat+recOS))
+    + card('primary','Margem bruta estimada', cobertos ? fmt(recCob-custo) : '—', cobertos ? `${cobertos}/${lines.length} itens com custo (custo atual do estoque)` : 'sem custo cadastrado');
+  const porDia = {}; vendas.forEach(v => { const m = String(v.data).match(/(\d{2})\/(\d{2})\/(\d{4})/); if (m) { const k = `${m[3]}-${m[2]}-${m[1]}`; porDia[k] = (porDia[k]||0) + (Number(v.total)||0); } });
+  const dias = Object.entries(porDia).sort().slice(-31).map(([k,v]) => [k.split('-').reverse().join('/'), v]);
+  const pag = {}; vendas.forEach(v => { const k = v.pag||'Outro'; (pag[k] = pag[k]||{n:0,v:0}).n++; pag[k].v += Number(v.total)||0; });
+  const prod = {}; lines.forEach(l => { if (!l.nome || l.nome === '-') return; const k = String(l.nome).trim(); (prod[k] = prod[k]||{q:0,v:0}).q += Number(l.qtd)||0; prod[k].v += Number(l.subtotal)||0; });
+  const cli = {}; vendas.forEach(v => { const k = v.clienteNome||'Consumidor'; (cli[k] = cli[k]||{n:0,v:0}).n++; cli[k].v += Number(v.total)||0; });
+  const cnt = (a, f) => a.filter(f).length, osSt = {}; osNovas.forEach(o => osSt[o.status] = (osSt[o.status]||0)+1);
+  const aprov = cnt(orc, o=>o.status==='Aprovado'), decid = aprov + cnt(orc, o=>o.status==='Reprovado');
+  const baixo = est.filter(i => (Number(i.qtd)||0) <= (Number(i.min)||0)).sort((a,b)=>a.qtd-b.qtd);
+  const sec = (t, h) => `<div class="panel" style="margin-bottom:14px"><h3 style="margin-bottom:10px">${t}</h3>${h}</div>`;
+  document.getElementById('relContent').innerHTML =
+    sec('📅 Vendas por dia' + (dias.length ? ` <small style="color:var(--text-dim)">(últimos ${dias.length} dias com venda)</small>` : ''), hbars(dias, fmt)) +
+    sec('💳 Formas de pagamento', hbars(Object.entries(pag).sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>[k,x.v,` · ${x.n}× · ${fat?Math.round(x.v/fat*100):0}%`]), fmt)) +
+    sec('🏆 Produtos mais vendidos', hbars(Object.entries(prod).sort((a,b)=>b[1].q-a[1].q).slice(0,10).map(([k,x])=>[k,x.q,` un · ${fmt(x.v)}`]), v=>v)) +
+    sec('👥 Melhores clientes', hbars(Object.entries(cli).sort((a,b)=>b[1].v-a[1].v).slice(0,8).map(([k,x])=>[k,x.v,` · ${x.n} compra(s)`]), fmt)) +
+    sec('🔧 Ordens de serviço criadas no período', Object.keys(osSt).length ? `<table><tr><th>Status</th><th>Qtd</th></tr>${Object.entries(osSt).map(([k,n])=>`<tr><td>${E5(k)}</td><td>${n}</td></tr>`).join('')}</table>` : '<p class="empty-row">Sem OS no período</p>') +
+    sec('💰 Orçamentos', `<table><tr><th>Status</th><th>Qtd</th><th>Valor</th></tr>${['Pendente','Aprovado','Reprovado'].map(s=>`<tr><td>${s}</td><td>${cnt(orc,o=>o.status===s)}</td><td>${fmt(sumBy(orc.filter(o=>o.status===s),o=>o.valor))}</td></tr>`).join('')}</table>
+      <small style="color:var(--text-dim)">Taxa de aprovação (aprovados ÷ decididos): ${decid ? Math.round(aprov/decid*100)+'%' : '—'}. Orçamentos não são faturamento.</small>`) +
+    sec(`📦 Estoque baixo (agora) — ${baixo.length} item(ns)`, baixo.length ? `<table><tr><th>Item</th><th>Qtd</th><th>Mínimo</th></tr>${baixo.map(i=>`<tr><td>${E5(i.item)}</td><td style="color:var(--${i.qtd<=0?'danger':'warning'})">${i.qtd}</td><td>${i.min}</td></tr>`).join('')}</table>` : '<p class="empty-row">Nenhum item abaixo do mínimo</p>') +
+    sec('🏬 Valor em estoque (a custo)', `<strong>${fmt(sumBy(est, i=>(Number(i.qtd)||0)*(Number(i.custo)||0)))}</strong> em ${est.length} itens · valor de venda potencial: ${fmt(sumBy(est, i=>(Number(i.qtd)||0)*(Number(i.venda)||0)))}`);
+};
+function relCsv() {
+  const v = window._relVendas || []; if (!v.length) return toast('Sem vendas no período', true);
+  const q = x => '"' + String(x==null?'':x).replace(/"/g,'""') + '"';
+  const csv = '\ufeffNº;Data;Cliente;Itens;Pagamento;Desconto;Total\n' + v.map(x => [x.numero,x.data,x.clienteNome,x.itemName,x.pag,(x.desc||0),(x.total||0)].map(q).join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = 'vendas.csv'; a.click();
+}
+</script>
+
+<script>
+/* ===== v8: "Imprimir A4" da garantia = exatamente o mesmo PDF enviado pelo WhatsApp (1 página A4) ===== */
+const printGarantiaOriginal = printGarantia;
+const garantiaCapturarOriginal = garantiaCapturarHtmlA4;
+let garCapturando = false;
+garantiaCapturarHtmlA4 = async function () {          // a captura usa o modelo original, sem recursão
+  garCapturando = true;
+  try { return await garantiaCapturarOriginal(); } finally { garCapturando = false; }
+};
+let garImprimindo = false;
+printGarantia = async function (type = 'thermal') {
+  if (type !== 'a4' || garCapturando) return printGarantiaOriginal(type);   // térmica continua como era
+  if (garImprimindo) return;
+  const id = document.getElementById('gOS').value;
+  if (!id) return toast('Selecione OS', true);
+  garImprimindo = true;
+  try {
+    toast('⏳ Preparando o PDF da garantia...', false, true);
+    const o = await dbGet('os', Number(id));
+    const g = await lvGerarPdf(o);                    // mesmo gerador usado no envio por WhatsApp
+    if (window.lvUrlPdf) URL.revokeObjectURL(lvUrlPdf);
+    window.lvUrlPdf = URL.createObjectURL(g.pdf);
+    const abrirVisualizador = () => { document.getElementById('garPdfFrame').src = lvUrlPdf; lvOpen('garPdfView'); };
+    const fr = document.createElement('iframe');
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    fr.onload = () => {
+      try { fr.contentWindow.focus(); fr.contentWindow.print(); }
+      catch (e) { abrirVisualizador(); toast('Use o botão de imprimir do visualizador do PDF', false, true); }
+      setTimeout(() => fr.remove(), 60000);
+    };
+    fr.src = lvUrlPdf;
+    document.body.appendChild(fr);
+  } catch (e) { toast('Não foi possível gerar a garantia: ' + e.message, true); }
+  finally { garImprimindo = false; }
+};
+</script>
+
+</body>
+</html>
