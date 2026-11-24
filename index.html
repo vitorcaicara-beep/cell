@@ -1331,7 +1331,7 @@ async function doLogin() {
   if (!email || !senha) { toast('Preencha e-mail e senha', true); return; }
   try {
     const { error } = await sb.auth.signInWithPassword({ email, password: senha });
-    if (error) { toast('E-mail ou senha incorretos', true); return; }
+    if (error) { toast('Erro: ' + error.message', true); return; }
     await entrarNoApp(true);
   } catch (err) { toast('Erro ao entrar: ' + err.message, true); }
 }
